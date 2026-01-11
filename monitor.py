@@ -15,6 +15,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
+# Set matplotlib backend for headless environments (GitHub Actions, servers)
+import matplotlib
+matplotlib.use('Agg')
+
 import yfinance as yf
 import pandas as pd
 import numpy as np
