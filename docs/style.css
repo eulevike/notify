@@ -422,6 +422,52 @@ td {
     color: var(--text-muted);
 }
 
+/* Subtitle */
+.subtitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: normal;
+}
+
+/* Center Note */
+.center-note {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 20px;
+}
+
+.center-note a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.center-note a:hover {
+    text-decoration: underline;
+}
+
+/* Button Link */
+.btn-link {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.btn-link:hover {
+    background: var(--primary-hover);
+}
+
+/* Chart Placeholder */
+.chart-placeholder {
+    padding: 40px 20px;
+    text-align: center;
+    background: var(--bg);
+    color: var(--text-muted);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .header {
