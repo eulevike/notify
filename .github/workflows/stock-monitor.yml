@@ -44,6 +44,15 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+      - name: Upload last_run.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: last-run-data
+          path: last_run.json
+          retention-days: 7
+          if-no-files-found: ignore
+
       - name: Upload log (on failure)
         if: failure()
         uses: actions/upload-artifact@v4

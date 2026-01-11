@@ -10,6 +10,7 @@ Technical Constraints:
 
 import os
 import base64
+import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -807,6 +808,102 @@ Pattern: {vision_result}"""
                 except Exception as e:
                     logger.warning(f"Failed to clean up chart {chart_path}: {e}")
 
+    def _parse_vision_result(self, vision_result: str) -> Dict[str, Any]:
+        """
+        Parse vision analysis result to extract pattern information.
+
+        Args:
+            vision_result: Raw vision analysis string (may contain JSON)
+
+        Returns:
+            Dict with pattern_detected, signal, reasoning, confidence
+        """
+        default_pattern = {
+            "pattern_detected": "Unknown",
+            "signal": "NEUTRAL",
+            "reasoning": "",
+            "confidence": "low"
+        }
+
+        if not vision_result:
+            return default_pattern
+
+        try:
+            # Extract JSON from vision result (may be wrapped in markdown)
+            result_text = vision_result.strip()
+            if result_text.startswith('```json'):
+                result_text = result_text[7:]
+            if result_text.startswith('```'):
+                result_text = result_text[3:]
+            if result_text.endswith('```'):
+                result_text = result_text[:-3]
+            result_text = result_text.strip()
+
+            parsed = json.loads(result_text)
+            return {
+                "pattern_detected": parsed.get("pattern_detected", "Unknown"),
+                "signal": parsed.get("signal", "NEUTRAL"),
+                "reasoning": parsed.get("reasoning", ""),
+                "confidence": parsed.get("confidence", "low")
+            }
+        except (json.JSONDecodeError, KeyError):
+            logger.warning(f"Could not parse vision result as JSON")
+            return default_pattern
+
+    def _save_last_run_json(self, results: List[Dict[str, Any]], buy_signals: int) -> None:
+        """
+        Save analysis results to last_run.json for web UI consumption.
+
+        Args:
+            results: List of analysis result dictionaries
+            buy_signals: Count of buy signals
+        """
+        try:
+            # Build result items with parsed pattern info
+            result_items = []
+            for result in results:
+                # Parse vision result to extract pattern info
+                vision_result = result.get("vision_result", "")
+                pattern_info = self._parse_vision_result(vision_result)
+
+                # Determine signal type
+                signal_raw = result.get("signal", "HOLD")
+                if "BUY" in signal_raw.upper():
+                    signal = "BUY"
+                else:
+                    signal = "HOLD"
+
+                result_items.append({
+                    "ticker": result.get("ticker", ""),
+                    "signal": signal,
+                    "price": result.get("price", 0),
+                    "vwap": result.get("vwap", 0),
+                    "volume_ratio": result.get("volume_ratio", 0),
+                    "pattern": pattern_info.get("pattern_detected", "Unknown"),
+                    "pattern_signal": pattern_info.get("signal", "NEUTRAL"),
+                    "reasoning": pattern_info.get("reasoning", ""),
+                    "chart_path": result.get("annotated_chart", "")
+                })
+
+            # Build the last_run.json structure
+            last_run_data = {
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "status": "completed",
+                "total_analyzed": len(results),
+                "buy_signals": buy_signals,
+                "results": result_items
+            }
+
+            # Save to file
+            output_path = Path("last_run.json")
+            with open(output_path, 'w') as f:
+                json.dump(last_run_data, f, indent=2)
+
+            logger.info(f"Saved last_run.json with {len(result_items)} results")
+
+        except Exception as e:
+            logger.error(f"Error saving last_run.json: {e}")
+
     def run(self):
         """Main execution loop."""
         # Check if it's a weekday and market hours
@@ -861,6 +958,9 @@ Pattern: {vision_result}"""
         buy_signals = sum(1 for r in results if "BUY" in r.get("signal", ""))
         logger.info(f"\nTotal analyzed: {len(results)}")
         logger.info(f"Buy signals: {buy_signals}")
+
+        # Generate last_run.json for web UI
+        self._save_last_run_json(results, buy_signals)
 
 
 def main():

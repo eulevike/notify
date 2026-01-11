@@ -1,0 +1,80 @@
+name: API - Update Settings
+
+on:
+  workflow_dispatch:
+    inputs:
+      show_charts:
+        description: 'Show charts: buy_only, always, never'
+        required: false
+        type: choice
+        options:
+          - buy_only
+          - always
+          - never
+      show_explanation:
+        description: 'Show explanation: true or false'
+        required: false
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      refresh_interval:
+        description: 'Refresh interval in seconds'
+        required: false
+        type: string
+        default: '30'
+
+jobs:
+  update-settings:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create or update settings.json
+        run: |
+          # Read existing settings or create defaults
+          if [ -f "settings.json" ]; then
+            SHOW_CHARTS=$(jq -r '.show_charts // "buy_only"' settings.json)
+            SHOW_EXPLANATION=$(jq -r '.show_explanation // true' settings.json)
+            REFRESH_INTERVAL=$(jq -r '.refresh_interval // 30' settings.json)
+          else
+            SHOW_CHARTS="buy_only"
+            SHOW_EXPLANATION="true"
+            REFRESH_INTERVAL="30"
+          fi
+
+          # Update with provided inputs (if any)
+          if [ -n "${{ inputs.show_charts }}" ]; then
+            SHOW_CHARTS="${{ inputs.show_charts }}"
+          fi
+
+          if [ -n "${{ inputs.show_explanation }}" ]; then
+            SHOW_EXPLANATION="${{ inputs.show_explanation }}"
+          fi
+
+          if [ -n "${{ inputs.refresh_interval }}" ]; then
+            REFRESH_INTERVAL="${{ inputs.refresh_interval }}"
+          fi
+
+          # Write new settings
+          cat > settings.json << EOF
+          {
+            "show_charts": "${SHOW_CHARTS}",
+            "show_explanation": ${SHOW_EXPLANATION},
+            "refresh_interval": ${REFRESH_INTERVAL}
+          }
+          EOF
+
+          echo "Settings updated"
+
+      - name: Commit changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add settings.json
+          git commit -m "Update settings via API" || echo "No changes to commit"
+          git push || echo "No changes to push"

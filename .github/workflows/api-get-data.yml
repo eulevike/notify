@@ -1,0 +1,68 @@
+name: API - Get Data
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read tickers
+        id: tickers
+        run: |
+          if [ -f "tickers.txt" ]; then
+            content=$(cat tickers.txt)
+            # Convert to JSON array format
+            tickers_json=$(echo "$content" | grep -v '^#' | grep -v '^$' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            echo "tickers=$tickers_json" >> $GITHUB_OUTPUT
+          else
+            echo "tickers=[]" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Read settings
+        id: settings
+        run: |
+          if [ -f "settings.json" ]; then
+            content=$(cat settings.json)
+            echo "settings=$content" >> $GITHUB_OUTPUT
+          else
+            echo "settings={\"show_charts\":\"buy_only\",\"show_explanation\":true,\"refresh_interval\":30}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Read last_run
+        id: last_run
+        run: |
+          if [ -f "last_run.json" ]; then
+            content=$(cat last_run.json)
+            echo "last_run=$content" >> $GITHUB_OUTPUT
+          else
+            echo "last_run={\"timestamp\":null,\"status\":\"no_data\",\"total_analyzed\":0,\"buy_signals\":0,\"results\":[]}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Output data
+        run: |
+          echo "tickers=${{ steps.tickers.outputs.tickers }}"
+          echo "settings=${{ steps.settings.outputs.settings }}"
+          echo "last_run=${{ steps.last_run.outputs.last_run }}"
+
+          # Save combined output as artifact for frontend to fetch
+          cat > data-output.json << EOF
+          {
+            "tickers": ${{ steps.tickers.outputs.tickers }},
+            "settings": ${{ steps.settings.outputs.settings }},
+            "last_run": ${{ steps.last_run.outputs.last_run }}
+          }
+          EOF
+
+      - name: Upload data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-data-response
+          path: data-output.json
+          retention-days: 1

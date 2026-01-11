@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Monitor UI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Stock Monitor</h1>
+            <div id="status" class="status">Loading...</div>
+        </header>
+
+        <!-- Auth Modal -->
+        <div id="authModal" class="modal">
+            <div class="modal-content">
+                <h2>GitHub Authentication</h2>
+                <p>Enter your GitHub Personal Access Token to manage the stock monitor.</p>
+                <p class="note">
+                    Create a token at: <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a><br>
+                    Required scope: <code>repo</code>
+                </p>
+                <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
+                <button id="saveTokenBtn">Save Token</button>
+                <p class="token-note">Token is stored locally in your browser only.</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Ticker Management -->
+            <section class="section">
+                <h2>Watchlist</h2>
+                <div class="ticker-controls">
+                    <input type="text" id="newTicker" placeholder="Add ticker (e.g., AAPL)" maxlength="10">
+                    <button id="addTickerBtn">Add</button>
+                </div>
+                <div id="tickersList" class="tickers-list"></div>
+            </section>
+
+            <!-- Settings -->
+            <section class="section">
+                <h2>Settings</h2>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label for="showCharts">Show Charts</label>
+                        <select id="showCharts">
+                            <option value="buy_only">Buy signals only</option>
+                            <option value="always">Always</option>
+                            <option value="never">Never</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="showExplanation">Show Explanation</label>
+                        <input type="checkbox" id="showExplanation">
+                    </div>
+                    <div class="setting-item">
+                        <label for="refreshInterval">Refresh Interval (sec)</label>
+                        <input type="number" id="refreshInterval" min="10" max="300" value="30">
+                    </div>
+                </div>
+                <button id="saveSettingsBtn" class="btn-primary">Save Settings</button>
+            </section>
+
+            <!-- Last Run Results -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>Last Run</h2>
+                    <button id="runMonitorBtn" class="btn-run">Run Now</button>
+                    <button id="refreshBtn" class="btn-refresh">Refresh</button>
+                </div>
+                <div id="lastRunSummary" class="summary"></div>
+                <div id="lastRunResults" class="results-table"></div>
+            </section>
+
+            <!-- Charts Gallery -->
+            <section class="section" id="chartsSection" style="display: none;">
+                <h2>Charts</h2>
+                <div id="chartsGallery" class="charts-gallery"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Chart Modal -->
+    <div id="chartModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close">&times;</span>
+            <img id="modalChartImage" src="" alt="Chart">
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

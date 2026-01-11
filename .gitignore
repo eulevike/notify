@@ -14,6 +14,12 @@ build/
 venv/
 ENV/
 
+# User settings (keep local version)
+settings.json
+
+# Generated run data
+last_run.json
+
 # Generated charts
 *.png
 *.jpg

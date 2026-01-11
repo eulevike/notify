@@ -1,0 +1,41 @@
+name: API - Add Ticker
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: 'Ticker symbol to add (e.g., AAPL)'
+        required: true
+        type: string
+
+jobs:
+  add-ticker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Add ticker
+        run: |
+          TICKER=$(echo "${{ inputs.ticker }}" | tr '[:lower:]' '[:upper:]')
+
+          # Check if ticker already exists
+          if grep -q "^${TICKER}$" tickers.txt 2>/dev/null; then
+            echo "Ticker ${TICKER} already exists in watchlist"
+            exit 1
+          fi
+
+          # Append ticker to file
+          echo "${TICKER}" >> tickers.txt
+          echo "Added ${TICKER} to watchlist"
+
+      - name: Commit changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add tickers.txt
+          git commit -m "Add ticker ${{ inputs.ticker }} via API"
+          git push
