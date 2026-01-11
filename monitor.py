@@ -18,6 +18,8 @@ from typing import Optional, Dict, Any, List
 # Set matplotlib backend for headless environments (GitHub Actions, servers)
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 import yfinance as yf
 import pandas as pd
@@ -247,9 +249,6 @@ class AnalysisEngine:
         Returns:
             Path to annotated chart image
         """
-        import matplotlib.pyplot as plt
-        import matplotlib.patches as mpatches
-
         try:
             # Get last 20 candles
             chart_data = data.tail(20).copy()
