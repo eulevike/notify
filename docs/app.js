@@ -88,7 +88,7 @@ function setupEventListeners() {
 }
 
 // Save GitHub token
-async function saveToken() {
+function saveToken() {
     const token = elements.githubTokenInput.value.trim();
     if (!token) {
         showError('Please enter a token');
@@ -97,30 +97,11 @@ async function saveToken() {
 
     setGitHubToken(token);
     hideAuthModal();
-    updateStatus('Authenticating...');
+    updateStatus('Token saved', 'success');
 
-    try {
-        // Test token by fetching repo info
-        const response = await fetch(`${CONFIG.apiBase}/repos/${CONFIG.repo}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-
-        if (response.ok) {
-            updateStatus('Connected', 'success');
-            loadAllData();
-            startAutoRefresh();
-        } else {
-            showError('Invalid token');
-            localStorage.removeItem(CONFIG.tokenKey);
-            showAuthModal();
-        }
-    } catch (error) {
-        showError('Connection failed');
-        console.error(error);
-    }
+    // Load data - will show errors if token is invalid
+    loadAllData();
+    startAutoRefresh();
 }
 
 // Load all data from GitHub
