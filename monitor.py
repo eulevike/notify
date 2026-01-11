@@ -498,8 +498,8 @@ class StockMonitor:
         # Encode chart for API
         image_base64 = self.analysis_engine.encode_image(chart_path)
 
-        # Step 5: Vision analysis with GLM-4V
-        logger.info(f"Running vision analysis with GLM-4V...")
+        # Step 5: Vision analysis
+        logger.info(f"Running vision analysis with {self.llm_client.model_vision}...")
         vision_result = self.llm_client.analyze_chart_vision(ticker, image_base64)
 
         if not vision_result:
@@ -508,7 +508,7 @@ class StockMonitor:
 
         logger.info(f"Vision Analysis Result: {vision_result}")
 
-        # Step 6: Final logic decision with GLM-4.7
+        # Step 6: Final logic decision
         analysis_data = {
             "ticker": ticker,
             "current_price": price,
@@ -520,7 +520,7 @@ class StockMonitor:
             "vision_analysis": vision_result
         }
 
-        logger.info(f"Running final logic analysis with GLM-4.7...")
+        logger.info(f"Running final logic analysis with {self.llm_client.model_logic}...")
         final_signal = self.llm_client.analyze_logic(ticker, analysis_data)
 
         if not final_signal:
