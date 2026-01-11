@@ -8,3 +8,4 @@ AMZN
 AMD
 SPY
 QQQ
+IREN
