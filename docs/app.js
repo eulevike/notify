@@ -15,11 +15,7 @@ const elements = {
     refreshBtn: document.getElementById('refreshBtn'),
     runMonitorBtn: document.getElementById('runMonitorBtn'),
     chartsSection: document.getElementById('chartsSection'),
-    chartsGallery: document.getElementById('chartsGallery'),
-    chartModal: document.getElementById('chartModal'),
-    modalChartImage: document.getElementById('modalChartImage'),
-    closeModal: document.querySelector('.close'),
-    repoInfo: document.getElementById('repoInfo')
+    chartsGallery: document.getElementById('chartsGallery')
 };
 
 // Raw GitHub content URLs
@@ -37,13 +33,6 @@ function init() {
     setupEventListeners();
     loadAllData();
     startAutoRefresh();
-
-    // Show repo info
-    if (elements.repoInfo) {
-        elements.repoInfo.innerHTML = `
-            <a href="${getRawUrls().workflows}" target="_blank">Manage on GitHub</a>
-        `;
-    }
 }
 
 // Setup event listeners
@@ -51,16 +40,6 @@ function setupEventListeners() {
     elements.refreshBtn.addEventListener('click', () => loadAllData());
     elements.runMonitorBtn.addEventListener('click', () => {
         window.open(getRawUrls().workflows, '_blank');
-    });
-
-    elements.closeModal.addEventListener('click', () => {
-        elements.chartModal.style.display = 'none';
-    });
-
-    elements.chartModal.addEventListener('click', (e) => {
-        if (e.target === elements.chartModal) {
-            elements.chartModal.style.display = 'none';
-        }
     });
 }
 
