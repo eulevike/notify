@@ -107,7 +107,7 @@ class AnalysisEngine:
 
     def fetch_data(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Fetch 15-minute candle data for the past day.
+        Fetch 15-minute candle data for the past day with retry logic.
 
         Args:
             ticker: Stock ticker symbol
@@ -115,24 +115,36 @@ class AnalysisEngine:
         Returns:
             DataFrame with OHLCV data or None if fetch fails
         """
-        try:
-            logger.info(f"Fetching data for {ticker}...")
-            ticker_obj = yf.Ticker(ticker)
+        import time
 
-            # Fetch 15-minute data for 1 day
-            data = ticker_obj.history(period="1d", interval="15m", prepost=False)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"Fetching data for {ticker}... (attempt {attempt + 1}/{max_retries})")
+                ticker_obj = yf.Ticker(ticker)
 
-            if data.empty:
-                logger.warning(f"No data returned for {ticker}")
+                # Fetch 15-minute data for 1 day
+                data = ticker_obj.history(period="1d", interval="15m", prepost=False)
+
+                if data.empty:
+                    logger.warning(f"No data returned for {ticker} (attempt {attempt + 1})")
+                    if attempt < max_retries - 1:
+                        time.sleep(2)  # Wait before retry
+                        continue
+                    return None
+
+                self.data_cache[ticker] = data
+                logger.info(f"Fetched {len(data)} candles for {ticker}")
+                return data
+
+            except Exception as e:
+                logger.error(f"Error fetching data for {ticker} (attempt {attempt + 1}): {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(2)  # Wait before retry
+                    continue
                 return None
 
-            self.data_cache[ticker] = data
-            logger.info(f"Fetched {len(data)} candles for {ticker}")
-            return data
-
-        except Exception as e:
-            logger.error(f"Error fetching data for {ticker}: {e}")
-            return None
+        return None
 
     def calculate_vwap(self, data: pd.DataFrame) -> pd.Series:
         """
@@ -283,10 +295,12 @@ class AnalysisEngine:
             ax2.set_ylabel('Volume', fontsize=10)
             ax2.set_xlabel('Time', fontsize=10)
 
-            # Adjust layout and save
-            plt.tight_layout()
+            # Adjust layout spacing to prevent overlap
+            plt.subplots_adjust(hspace=0.3, top=0.9, bottom=0.1, left=0.1, right=0.95)
+
+            # Save chart
             chart_path = f"{ticker.lower()}_annotated.png"
-            plt.savefig(chart_path, dpi=100, bbox_inches='tight')
+            plt.savefig(chart_path, dpi=100)
             plt.close()
 
             logger.info(f"Annotated chart saved: {chart_path}")
@@ -691,6 +705,8 @@ class StockMonitor:
         """
         chart_path = None  # Track chart for cleanup (vision chart only)
         annotated_path = None  # Annotated chart is kept for artifacts
+        vision_result = None  # Store vision analysis result
+        pattern_info = {}  # Store pattern info for chart annotation
 
         try:
             logger.info(f"\n{'='*60}")
@@ -703,71 +719,84 @@ class StockMonitor:
                 logger.warning(f"Insufficient data for {ticker}")
                 return None
 
-            # Step 2: Check VWAP condition
-            vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
-            logger.info(f"VWAP Check: Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
-
-            if not vwap_met:
-                logger.info(f"{ticker}: Price below VWAP, no signal generated")
-                return {"ticker": ticker, "signal": "HOLD", "reason": "Price below VWAP"}
-
-            # Step 3: Check Volume condition
-            volume_met, last_vol, avg_vol = self.analysis_engine.check_volume_condition(data)
-            logger.info(f"Volume Check: Last={last_vol:,.0f} vs Avg={avg_vol:,.0f} (2x={2*avg_vol:,.0f}) - {'✓ PASS' if volume_met else '✗ FAIL'}")
-
-            if not volume_met:
-                logger.info(f"{ticker}: Volume condition not met, no signal generated")
-                return {"ticker": ticker, "signal": "HOLD", "reason": "Volume below 2x average"}
-
-            # Step 4: Generate chart for vision analysis
+            # Step 2: Generate basic chart for all tickers (always)
             chart_path = self.analysis_engine.generate_chart(ticker, data)
             if not chart_path:
                 logger.error(f"Failed to generate chart for {ticker}")
-                return {"ticker": ticker, "signal": "HOLD", "reason": "Chart generation failed"}
+                return None
 
             # Encode chart for API
             image_base64 = self.analysis_engine.encode_image(chart_path)
 
-            # Step 5: Vision analysis
+            # Step 3: Vision analysis (always run for pattern detection)
             logger.info(f"Running vision analysis with {self.llm_client.model_vision}...")
             vision_result = self.llm_client.analyze_chart_vision(ticker, image_base64)
 
             if not vision_result:
-                logger.error(f"Vision analysis failed for {ticker}")
-                return {"ticker": ticker, "signal": "HOLD", "reason": "Vision analysis failed"}
+                logger.warning(f"Vision analysis failed for {ticker}, continuing without pattern info")
+                vision_result = '{"pattern_detected": "Unknown", "signal": "NEUTRAL", "reasoning": "", "confidence": "low"}'
 
             logger.info(f"Vision Analysis Result: {vision_result}")
 
-            # Step 6: Generate annotated chart (kept for artifacts)
+            # Parse vision result for chart annotation
             try:
-                # Parse vision result as JSON to extract pattern info
                 import json
+                result_text = vision_result.strip()
+                if result_text.startswith('```json'):
+                    result_text = result_text[7:]
+                if result_text.startswith('```'):
+                    result_text = result_text[3:]
+                if result_text.endswith('```'):
+                    result_text = result_text[:-3]
+                result_text = result_text.strip()
+                pattern_info = json.loads(result_text)
+            except json.JSONDecodeError:
+                logger.warning(f"Could not parse vision result as JSON")
                 pattern_info = {}
-                try:
-                    # Extract JSON from vision result (may be wrapped in markdown)
-                    result_text = vision_result.strip()
-                    if result_text.startswith('```json'):
-                        result_text = result_text[7:]  # Remove ```json
-                    if result_text.startswith('```'):
-                        result_text = result_text[3:]  # Remove ```
-                    if result_text.endswith('```'):
-                        result_text = result_text[:-3]  # Remove trailing ```
-                    result_text = result_text.strip()
 
-                    pattern_info = json.loads(result_text)
-                except json.JSONDecodeError:
-                    logger.warning(f"Could not parse vision result as JSON, using empty pattern info")
-                    pattern_info = {}
-
-                # Always generate annotated chart (user requested "always annotate")
+            # Step 4: Generate annotated chart for ALL tickers (kept for artifacts)
+            try:
                 annotated_path = self.analysis_engine.generate_annotated_chart(ticker, data, pattern_info)
                 if annotated_path:
                     logger.info(f"Annotated chart saved: {annotated_path}")
-
             except Exception as e:
                 logger.warning(f"Error generating annotated chart: {e}")
 
-            # Step 7: Final logic decision
+            # Step 5: Check VWAP condition
+            vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
+            logger.info(f"VWAP Check: Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
+
+            if not vwap_met:
+                logger.info(f"{ticker}: Price below VWAP, HOLD signal")
+                return {
+                    "ticker": ticker,
+                    "signal": "HOLD",
+                    "reason": "Price below VWAP",
+                    "price": price,
+                    "vwap": vwap,
+                    "volume_ratio": 0,
+                    "vision_result": vision_result,
+                    "annotated_chart": annotated_path
+                }
+
+            # Step 6: Check Volume condition
+            volume_met, last_vol, avg_vol = self.analysis_engine.check_volume_condition(data)
+            logger.info(f"Volume Check: Last={last_vol:,.0f} vs Avg={avg_vol:,.0f} (2x={2*avg_vol:,.0f}) - {'✓ PASS' if volume_met else '✗ FAIL'}")
+
+            if not volume_met:
+                logger.info(f"{ticker}: Volume condition not met, HOLD signal")
+                return {
+                    "ticker": ticker,
+                    "signal": "HOLD",
+                    "reason": "Volume below 2x average",
+                    "price": price,
+                    "vwap": vwap,
+                    "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0,
+                    "vision_result": vision_result,
+                    "annotated_chart": annotated_path
+                }
+
+            # Step 7: Final logic decision (only if all conditions passed)
             analysis_data = {
                 "ticker": ticker,
                 "current_price": price,
@@ -784,7 +813,16 @@ class StockMonitor:
 
             if not final_signal:
                 logger.error(f"Logic analysis failed for {ticker}")
-                return {"ticker": ticker, "signal": "HOLD", "reason": "Logic analysis failed"}
+                return {
+                    "ticker": ticker,
+                    "signal": "HOLD",
+                    "reason": "Logic analysis failed",
+                    "price": price,
+                    "vwap": vwap,
+                    "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0,
+                    "vision_result": vision_result,
+                    "annotated_chart": annotated_path
+                }
 
             logger.info(f"Final Signal: {final_signal}")
 
@@ -967,8 +1005,13 @@ Pattern: {vision_result}"""
         results = []
 
         # Analyze each ticker
-        for ticker in tickers:
+        import time
+        for i, ticker in enumerate(tickers):
             try:
+                # Add delay between tickers to avoid rate limiting
+                if i > 0:
+                    time.sleep(1)  # 1 second delay between tickers
+
                 result = self.analyze_ticker(ticker)
                 if result:
                     results.append(result)
