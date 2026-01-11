@@ -2,9 +2,12 @@ name: Stock Monitor
 
 on:
   schedule:
-    # Runs every hour at minute 2
-    - cron: '2 * * * *'
-  workflow_dispatch:  # Allow manual trigger
+    # Run during London & NY market hours on weekdays only
+    # London (LSE): 8:00-16:30 UTC (winter) / 7:00-15:30 UTC (summer)
+    # New York (NYSE): 14:30-21:00 UTC (winter) / 13:30-20:00 UTC (summer)
+    # Combined: 7:00-21:00 UTC, Mon-Fri
+    - cron: '2 7-21 * * 1-5'
+  workflow_dispatch:  # Allow manual trigger anytime
 
 jobs:
   monitor:

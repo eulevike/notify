@@ -809,6 +809,24 @@ Pattern: {vision_result}"""
 
     def run(self):
         """Main execution loop."""
+        # Check if it's a weekday and market hours
+        now = datetime.utcnow()
+        weekday = now.weekday()  # 0=Monday, 6=Sunday
+        hour_utc = now.hour
+
+        # Skip weekends (Saturday=5, Sunday=6 in weekday())
+        if weekday >= 5:  # Saturday or Sunday
+            logger.info("Weekend - skipping analysis")
+            return
+
+        # Market hours check (London + New York)
+        # Winter: London 8:00-16:30 UTC, NY 14:30-21:00 UTC → Combined 8:00-21:00 UTC
+        # Summer: London 7:00-15:30 UTC, NY 13:30-20:00 UTC → Combined 7:00-20:00 UTC
+        # Allow hours 7-21 UTC to cover both markets
+        if hour_utc < 7 or hour_utc > 21:
+            logger.info(f"Outside market hours (UTC hour {hour_utc}) - skipping analysis")
+            return
+
         logger.info("="*60)
         logger.info("Stock Monitor Started")
         logger.info(f"Execution time: {datetime.now()}")
