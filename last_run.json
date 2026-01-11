@@ -1,7 +1,129 @@
 {
-  "timestamp": null,
-  "status": "no_data",
-  "total_analyzed": 0,
+  "timestamp": "2026-01-11T17:25:14Z",
+  "status": "completed",
+  "total_analyzed": 11,
   "buy_signals": 0,
-  "results": []
+  "results": [
+    {
+      "ticker": "AAPL",
+      "signal": "HOLD",
+      "price": 259.3500061035156,
+      "vwap": 258.54293284048373,
+      "volume_ratio": 2.650366543497026,
+      "pattern": "None",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "The last candle shows a small green body, but there's no clear prior bearish body to form a Bullish Engulfing pattern. The previous candle is also green, so no Hammer pattern is present as it requires a prior downward movement.",
+      "chart_path": "aapl_annotated.png"
+    },
+    {
+      "ticker": "MSFT",
+      "signal": "HOLD",
+      "price": 479.20001220703125,
+      "vwap": 476.48071570509455,
+      "volume_ratio": 2.940215794597646,
+      "pattern": "None",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "The last candle shows a small green body, but there's no clear prior bearish candle to form a Bullish Engulfing pattern, and no significant downward movement preceding it to form a Hammer pattern.",
+      "chart_path": "msft_annotated.png"
+    },
+    {
+      "ticker": "GOOGL",
+      "signal": "HOLD",
+      "price": 0,
+      "vwap": 0,
+      "volume_ratio": 0,
+      "pattern": "Unknown",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "",
+      "chart_path": ""
+    },
+    {
+      "ticker": "TSLA",
+      "signal": "HOLD",
+      "price": 0,
+      "vwap": 0,
+      "volume_ratio": 0,
+      "pattern": "Unknown",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "",
+      "chart_path": ""
+    },
+    {
+      "ticker": "NVDA",
+      "signal": "HOLD",
+      "price": 0,
+      "vwap": 0,
+      "volume_ratio": 0,
+      "pattern": "Unknown",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "",
+      "chart_path": ""
+    },
+    {
+      "ticker": "META",
+      "signal": "HOLD",
+      "price": 653.0399780273438,
+      "vwap": 650.6343062972031,
+      "volume_ratio": 3.7175409351062276,
+      "pattern": "None",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "The last candle has a small green body, but there's no clear prior bearish candle to form a Bullish Engulfing pattern. The previous candle also has a small body, so the reversal signal is weak without a larger preceding downward movement.",
+      "chart_path": "meta_annotated.png"
+    },
+    {
+      "ticker": "AMZN",
+      "signal": "HOLD",
+      "price": 247.35000610351562,
+      "vwap": 245.66907288308747,
+      "volume_ratio": 4.223945691287859,
+      "pattern": "None",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "The last candle shows a small green body, but there's no preceding bearish candle to form a Bullish Engulfing pattern, and no significant downward movement prior to suggest a Hammer pattern.",
+      "chart_path": "amzn_annotated.png"
+    },
+    {
+      "ticker": "AMD",
+      "signal": "HOLD",
+      "price": 0,
+      "vwap": 0,
+      "volume_ratio": 0,
+      "pattern": "Unknown",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "",
+      "chart_path": ""
+    },
+    {
+      "ticker": "SPY",
+      "signal": "HOLD",
+      "price": 693.989990234375,
+      "vwap": 693.1622325874091,
+      "volume_ratio": 5.024517564722003,
+      "pattern": "None",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "The last candle has a small green body, but there's no clear prior bearish candle to form a Bullish Engulfing pattern. The previous candle also has a small green body, so no Hammer pattern is present either.",
+      "chart_path": "spy_annotated.png"
+    },
+    {
+      "ticker": "QQQ",
+      "signal": "HOLD",
+      "price": 0,
+      "vwap": 0,
+      "volume_ratio": 0,
+      "pattern": "Unknown",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "",
+      "chart_path": ""
+    },
+    {
+      "ticker": "IREN",
+      "signal": "HOLD",
+      "price": 0,
+      "vwap": 0,
+      "volume_ratio": 0,
+      "pattern": "Unknown",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "",
+      "chart_path": ""
+    }
+  ]
 }
