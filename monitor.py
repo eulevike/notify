@@ -41,13 +41,24 @@ class Config:
     NTFY_BASE_URL = "https://ntfy.sh"
 
     def __init__(self):
+        # Try to load .env file (will be ignored if not found)
         load_dotenv()
+
+        # Read environment variables (from .env file OR system env vars)
         self.zai_api_key = os.getenv("ZAI_API_KEY")
         self.ntfy_topic = os.getenv("NTFY_TOPIC")
         self.tickers_file = os.getenv("TICKERS_FILE", "tickers.txt")
+
         # Model names - configurable via env vars (defaults to glm-4-plus which supports multimodal)
-        self.model_vision = os.getenv("MODEL_VISION", "glm-4-plus")
-        self.model_logic = os.getenv("MODEL_LOGIC", "glm-4-plus")
+        # Check if env vars are set, otherwise use default
+        env_vision = os.getenv("MODEL_VISION")
+        env_logic = os.getenv("MODEL_LOGIC")
+
+        self.model_vision = env_vision if env_vision else "glm-4-plus"
+        self.model_logic = env_logic if env_logic else "glm-4-plus"
+
+        # Debug logging
+        logger.info(f"Config: MODEL_VISION={self.model_vision}, MODEL_LOGIC={self.model_logic}")
 
         if not self.zai_api_key:
             raise ValueError("ZAI_API_KEY not found in environment variables")
