@@ -336,6 +336,12 @@ class AnalysisEngine:
             rotation=45
         )
 
+        # Set y-axis limits based on price range
+        min_price = data[['Open', 'Close']].min().min()
+        max_price = data[['Open', 'Close']].max().max()
+        price_range = max_price - min_price
+        ax.set_ylim(min_price - price_range * 0.05, max_price + price_range * 0.05)
+
         # Add grid
         ax.grid(True, alpha=0.3, linestyle='--')
         ax.set_ylabel('Price ($)', fontsize=10)
@@ -616,14 +622,15 @@ class AlertModule:
         self.base_url = config.NTFY_BASE_URL
         self.topic = config.ntfy_topic
 
-    def send_alert(self, ticker: str, message: str, priority: str = "high") -> bool:
+    def send_alert(self, ticker: str, message: str, priority: str = "high", image_path: Optional[str] = None) -> bool:
         """
-        Send alert via ntfy.sh.
+        Send alert via ntfy.sh with optional image attachment.
 
         Args:
             ticker: Stock ticker symbol
             message: Alert message
             priority: Message priority (default: high)
+            image_path: Optional path to chart image to attach
 
         Returns:
             True if alert sent successfully, False otherwise
@@ -637,10 +644,21 @@ class AlertModule:
         }
 
         try:
-            response = requests.post(url, data=message.encode(), headers=headers, timeout=10)
+            if image_path and os.path.exists(image_path):
+                # Send message with image attachment
+                with open(image_path, 'rb') as f:
+                    files = {'file': f}
+                    # Put message in headers for ntfy
+                    headers['Message'] = message
+                    response = requests.post(url, files=files, headers=headers, timeout=10)
+            else:
+                # Send text-only message
+                response = requests.post(url, data=message.encode(), headers=headers, timeout=10)
 
             if response.status_code in [200, 201]:
                 logger.info(f"Alert sent for {ticker}: {message}")
+                if image_path:
+                    logger.info(f"Chart attached: {image_path}")
                 return True
             else:
                 logger.error(f"Failed to send alert: {response.status_code}")
@@ -794,7 +812,8 @@ Pattern: {vision_result}"""
                 if artifact_url:
                     alert_message += f"\n\nView charts: {artifact_url}"
 
-                self.alert_module.send_alert(ticker, alert_message)
+                # Send alert with annotated chart attached
+                self.alert_module.send_alert(ticker, alert_message, image_path=annotated_path)
 
             return result
 
