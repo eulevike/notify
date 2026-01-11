@@ -107,7 +107,7 @@ class AnalysisEngine:
 
     def fetch_data(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Fetch 15-minute candle data for the past day with retry logic.
+        Fetch 15-minute candle data for the past week with retry logic.
 
         Args:
             ticker: Stock ticker symbol
@@ -123,8 +123,8 @@ class AnalysisEngine:
                 logger.info(f"Fetching data for {ticker}... (attempt {attempt + 1}/{max_retries})")
                 ticker_obj = yf.Ticker(ticker)
 
-                # Fetch 15-minute data for 1 day
-                data = ticker_obj.history(period="1d", interval="15m", prepost=False)
+                # Fetch 15-minute data for 5 days (about 130 candles for 5 trading days)
+                data = ticker_obj.history(period="5d", interval="15m", prepost=False)
 
                 if data.empty:
                     logger.warning(f"No data returned for {ticker} (attempt {attempt + 1})")
@@ -263,14 +263,18 @@ class AnalysisEngine:
             Path to annotated chart image
         """
         try:
-            # Get last 20 candles
-            chart_data = data.tail(20).copy()
+            # Show all available candles, max 100 to keep chart readable
+            max_candles = 100
+            if len(data) > max_candles:
+                chart_data = data.tail(max_candles).copy()
+            else:
+                chart_data = data.copy()
             chart_data.index.name = 'Date'
 
-            # Create figure with subplots
+            # Create figure with subplots (wider for more candles)
             fig, (ax1, ax2) = plt.subplots(
                 2, 1,
-                figsize=(12, 8),
+                figsize=(16, 8),
                 gridspec_kw={'height_ratios': [3, 1]},
                 sharex=True
             )
@@ -344,11 +348,20 @@ class AnalysisEngine:
 
         # Set x-axis limits and labels
         ax.set_xlim(-0.5, len(data) - 0.5)
-        ax.set_xticks(range(0, len(data), max(1, len(data) // 10)))
-        ax.set_xticklabels(
-            [idx.strftime('%H:%M') for idx in data.index[::max(1, len(data) // 10)]],
-            rotation=45
-        )
+
+        # Show about 12-15 labels on x-axis
+        label_interval = max(1, len(data) // 12)
+        ax.set_xticks(range(0, len(data), label_interval))
+
+        # Format labels with date if spanning multiple days
+        labels = []
+        first_date = data.index[0].date()
+        for idx in data.index[::label_interval]:
+            if idx.date() != first_date:
+                labels.append(idx.strftime('%m/%d %H:%M'))
+            else:
+                labels.append(idx.strftime('%H:%M'))
+        ax.set_xticklabels(labels, rotation=45, fontsize=8)
 
         # Set y-axis limits based on price range
         min_price = data[['Open', 'Close']].min().min()
