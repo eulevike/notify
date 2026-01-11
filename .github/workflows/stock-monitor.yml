@@ -29,7 +29,17 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           MODEL_VISION: glm-4-plus
           MODEL_LOGIC: glm-4-plus
+          GITHUB_ACTIONS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: python monitor.py
+
+      - name: Upload annotated charts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-charts-${{ github.run_number }}
+          path: "*_annotated.png"
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Upload log (on failure)
         if: failure()

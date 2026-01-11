@@ -230,6 +230,214 @@ class AnalysisEngine:
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
 
+    def generate_annotated_chart(
+        self,
+        ticker: str,
+        data: pd.DataFrame,
+        pattern_info: Optional[Dict[str, Any]] = None
+    ) -> Optional[str]:
+        """
+        Generate chart with pattern annotation using matplotlib.
+
+        Args:
+            ticker: Stock symbol
+            data: OHLCV DataFrame
+            pattern_info: Optional dict with 'pattern_detected', 'signal', 'reasoning'
+
+        Returns:
+            Path to annotated chart image
+        """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+
+        try:
+            # Get last 20 candles
+            chart_data = data.tail(20).copy()
+            chart_data.index.name = 'Date'
+
+            # Create figure with subplots
+            fig, (ax1, ax2) = plt.subplots(
+                2, 1,
+                figsize=(12, 8),
+                gridspec_kw={'height_ratios': [3, 1]},
+                sharex=True
+            )
+
+            # Plot candlestick chart
+            self._plot_candles(ax1, chart_data)
+
+            # Plot volume
+            self._plot_volume(ax2, chart_data)
+
+            # Add pattern annotation if provided
+            if pattern_info:
+                self._add_pattern_annotation(ax1, chart_data, pattern_info, ticker)
+
+            # Add title and labels
+            fig.suptitle(
+                f'{ticker} - 15Min Chart (Wickless Analysis)',
+                fontsize=14,
+                fontweight='bold'
+            )
+            ax1.set_ylabel('Price ($)', fontsize=10)
+            ax2.set_ylabel('Volume', fontsize=10)
+            ax2.set_xlabel('Time', fontsize=10)
+
+            # Adjust layout and save
+            plt.tight_layout()
+            chart_path = f"{ticker.lower()}_annotated.png"
+            plt.savefig(chart_path, dpi=100, bbox_inches='tight')
+            plt.close()
+
+            logger.info(f"Annotated chart saved: {chart_path}")
+            return chart_path
+
+        except Exception as e:
+            logger.error(f"Error generating annotated chart: {e}")
+            # Fall back to regular chart
+            return self.generate_chart(ticker, data)
+
+    def _plot_candles(self, ax, data: pd.DataFrame) -> None:
+        """
+        Plot wickless candlestick chart on given axes.
+
+        Args:
+            ax: Matplotlib axes
+            data: OHLCV DataFrame
+        """
+        # Calculate colors based on open/close
+        colors = np.where(data['Close'] >= data['Open'], 'g', 'r')
+
+        # Plot body rectangles (wickless)
+        for i, (idx, row) in enumerate(data.iterrows()):
+            open_price = row['Open']
+            close_price = row['Close']
+            color = colors[i]
+
+            # Body height (use min height of 0.01 for flat candles)
+            body_height = max(abs(close_price - open_price), 0.01)
+
+            # Draw rectangle for body
+            rect = mpatches.Rectangle(
+                (i - 0.35, min(open_price, close_price)),
+                0.7,  # width
+                body_height,
+                facecolor=color,
+                edgecolor=color,
+                alpha=0.8
+            )
+            ax.add_patch(rect)
+
+        # Set x-axis limits and labels
+        ax.set_xlim(-0.5, len(data) - 0.5)
+        ax.set_xticks(range(0, len(data), max(1, len(data) // 10)))
+        ax.set_xticklabels(
+            [idx.strftime('%H:%M') for idx in data.index[::max(1, len(data) // 10)]],
+            rotation=45
+        )
+
+        # Add grid
+        ax.grid(True, alpha=0.3, linestyle='--')
+        ax.set_ylabel('Price ($)', fontsize=10)
+
+    def _plot_volume(self, ax, data: pd.DataFrame) -> None:
+        """
+        Plot volume bars on given axes.
+
+        Args:
+            ax: Matplotlib axes
+            data: OHLCV DataFrame
+        """
+        # Calculate colors based on price movement
+        colors = np.where(data['Close'] >= data['Open'], 'g', 'r')
+
+        # Plot volume bars
+        ax.bar(range(len(data)), data['Volume'], color=colors, alpha=0.6, width=0.7)
+
+        # Format volume labels
+        ax.set_xlim(-0.5, len(data) - 0.5)
+        ax.set_ylabel('Volume', fontsize=10)
+
+        # Format y-axis to show volumes in millions/thousands
+        ax.yaxis.set_major_formatter(
+            plt.FuncFormatter(lambda x, p: f'{x/1e6:.1f}M' if x >= 1e6 else f'{x/1e3:.1f}K')
+        )
+
+        ax.grid(True, alpha=0.3, linestyle='--', axis='y')
+
+    def _add_pattern_annotation(
+        self,
+        ax,
+        data: pd.DataFrame,
+        pattern_info: Dict[str, Any],
+        ticker: str
+    ) -> None:
+        """
+        Add annotation box for detected pattern.
+
+        Args:
+            ax: Matplotlib axes
+            data: OHLCV DataFrame
+            pattern_info: Dict with pattern information
+            ticker: Stock symbol
+        """
+        try:
+            signal = pattern_info.get('signal', 'NEUTRAL')
+            pattern = pattern_info.get('pattern_detected', 'None')
+
+            # Position annotation at the last candle
+            x_pos = len(data) - 1
+            last_candle = data.iloc[-1]
+            y_pos = last_candle['High']
+
+            # Build annotation text
+            annotation_text = (
+                f"Pattern: {pattern}\n"
+                f"Signal: {signal}\n"
+            )
+
+            # Add reasoning if available (truncate if too long)
+            reasoning = pattern_info.get('reasoning', '')
+            if reasoning:
+                reasoning_short = reasoning[:60] + '...' if len(reasoning) > 60 else reasoning
+                annotation_text += f"Note: {reasoning_short}"
+
+            # Choose annotation color based on signal
+            if signal == 'BULLISH':
+                box_color = 'lightgreen'
+                arrow_color = 'green'
+            elif signal == 'BEARISH':
+                box_color = 'lightcoral'
+                arrow_color = 'red'
+            else:
+                box_color = 'lightyellow'
+                arrow_color = 'orange'
+
+            # Add annotation with arrow
+            ax.annotate(
+                annotation_text,
+                xy=(x_pos, last_candle['Close']),
+                xytext=(max(0, x_pos - 4), y_pos * 1.02),
+                fontsize=8,
+                bbox=dict(
+                    boxstyle='round,pad=0.5',
+                    facecolor=box_color,
+                    alpha=0.8,
+                    edgecolor=arrow_color,
+                    linewidth=2
+                ),
+                arrowprops=dict(
+                    arrowstyle='->',
+                    color=arrow_color,
+                    lw=2,
+                    connectionstyle='arc3,rad=0.3'
+                ),
+                verticalalignment='top'
+            )
+
+        except Exception as e:
+            logger.warning(f"Error adding annotation: {e}")
+
 
 class LLMApiClient:
     """Client for z.ai API (vision and logic models)."""
@@ -463,99 +671,142 @@ class StockMonitor:
         Returns:
             Analysis results dictionary or None if analysis fails
         """
-        logger.info(f"\n{'='*60}")
-        logger.info(f"Starting analysis for {ticker}")
-        logger.info(f"{'='*60}")
+        chart_path = None  # Track chart for cleanup (vision chart only)
+        annotated_path = None  # Annotated chart is kept for artifacts
 
-        # Step 1: Fetch data
-        data = self.analysis_engine.fetch_data(ticker)
-        if data is None or len(data) < 11:
-            logger.warning(f"Insufficient data for {ticker}")
-            return None
+        try:
+            logger.info(f"\n{'='*60}")
+            logger.info(f"Starting analysis for {ticker}")
+            logger.info(f"{'='*60}")
 
-        # Step 2: Check VWAP condition
-        vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
-        logger.info(f"VWAP Check: Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
+            # Step 1: Fetch data
+            data = self.analysis_engine.fetch_data(ticker)
+            if data is None or len(data) < 11:
+                logger.warning(f"Insufficient data for {ticker}")
+                return None
 
-        if not vwap_met:
-            logger.info(f"{ticker}: Price below VWAP, no signal generated")
-            return {"ticker": ticker, "signal": "HOLD", "reason": "Price below VWAP"}
+            # Step 2: Check VWAP condition
+            vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
+            logger.info(f"VWAP Check: Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
 
-        # Step 3: Check Volume condition
-        volume_met, last_vol, avg_vol = self.analysis_engine.check_volume_condition(data)
-        logger.info(f"Volume Check: Last={last_vol:,.0f} vs Avg={avg_vol:,.0f} (2x={2*avg_vol:,.0f}) - {'✓ PASS' if volume_met else '✗ FAIL'}")
+            if not vwap_met:
+                logger.info(f"{ticker}: Price below VWAP, no signal generated")
+                return {"ticker": ticker, "signal": "HOLD", "reason": "Price below VWAP"}
 
-        if not volume_met:
-            logger.info(f"{ticker}: Volume condition not met, no signal generated")
-            return {"ticker": ticker, "signal": "HOLD", "reason": "Volume below 2x average"}
+            # Step 3: Check Volume condition
+            volume_met, last_vol, avg_vol = self.analysis_engine.check_volume_condition(data)
+            logger.info(f"Volume Check: Last={last_vol:,.0f} vs Avg={avg_vol:,.0f} (2x={2*avg_vol:,.0f}) - {'✓ PASS' if volume_met else '✗ FAIL'}")
 
-        # Step 4: Generate chart and analyze visually
-        chart_path = self.analysis_engine.generate_chart(ticker, data)
-        if not chart_path:
-            logger.error(f"Failed to generate chart for {ticker}")
-            return {"ticker": ticker, "signal": "HOLD", "reason": "Chart generation failed"}
+            if not volume_met:
+                logger.info(f"{ticker}: Volume condition not met, no signal generated")
+                return {"ticker": ticker, "signal": "HOLD", "reason": "Volume below 2x average"}
 
-        # Encode chart for API
-        image_base64 = self.analysis_engine.encode_image(chart_path)
+            # Step 4: Generate chart for vision analysis
+            chart_path = self.analysis_engine.generate_chart(ticker, data)
+            if not chart_path:
+                logger.error(f"Failed to generate chart for {ticker}")
+                return {"ticker": ticker, "signal": "HOLD", "reason": "Chart generation failed"}
 
-        # Step 5: Vision analysis
-        logger.info(f"Running vision analysis with {self.llm_client.model_vision}...")
-        vision_result = self.llm_client.analyze_chart_vision(ticker, image_base64)
+            # Encode chart for API
+            image_base64 = self.analysis_engine.encode_image(chart_path)
 
-        if not vision_result:
-            logger.error(f"Vision analysis failed for {ticker}")
-            return {"ticker": ticker, "signal": "HOLD", "reason": "Vision analysis failed"}
+            # Step 5: Vision analysis
+            logger.info(f"Running vision analysis with {self.llm_client.model_vision}...")
+            vision_result = self.llm_client.analyze_chart_vision(ticker, image_base64)
 
-        logger.info(f"Vision Analysis Result: {vision_result}")
+            if not vision_result:
+                logger.error(f"Vision analysis failed for {ticker}")
+                return {"ticker": ticker, "signal": "HOLD", "reason": "Vision analysis failed"}
 
-        # Step 6: Final logic decision
-        analysis_data = {
-            "ticker": ticker,
-            "current_price": price,
-            "vwap": vwap,
-            "vwap_condition_met": vwap_met,
-            "last_volume": last_vol,
-            "avg_volume": avg_vol,
-            "volume_condition_met": volume_met,
-            "vision_analysis": vision_result
-        }
+            logger.info(f"Vision Analysis Result: {vision_result}")
 
-        logger.info(f"Running final logic analysis with {self.llm_client.model_logic}...")
-        final_signal = self.llm_client.analyze_logic(ticker, analysis_data)
+            # Step 6: Generate annotated chart (kept for artifacts)
+            try:
+                # Parse vision result as JSON to extract pattern info
+                import json
+                pattern_info = {}
+                try:
+                    # Extract JSON from vision result (may be wrapped in markdown)
+                    result_text = vision_result.strip()
+                    if result_text.startswith('```json'):
+                        result_text = result_text[7:]  # Remove ```json
+                    if result_text.startswith('```'):
+                        result_text = result_text[3:]  # Remove ```
+                    if result_text.endswith('```'):
+                        result_text = result_text[:-3]  # Remove trailing ```
+                    result_text = result_text.strip()
 
-        if not final_signal:
-            logger.error(f"Logic analysis failed for {ticker}")
-            return {"ticker": ticker, "signal": "HOLD", "reason": "Logic analysis failed"}
+                    pattern_info = json.loads(result_text)
+                except json.JSONDecodeError:
+                    logger.warning(f"Could not parse vision result as JSON, using empty pattern info")
+                    pattern_info = {}
 
-        logger.info(f"Final Signal: {final_signal}")
+                # Always generate annotated chart (user requested "always annotate")
+                annotated_path = self.analysis_engine.generate_annotated_chart(ticker, data, pattern_info)
+                if annotated_path:
+                    logger.info(f"Annotated chart saved: {annotated_path}")
 
-        # Step 7: Send alert if BUY signal
-        result = {
-            "ticker": ticker,
-            "signal": final_signal,
-            "price": price,
-            "vwap": vwap,
-            "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0,
-            "vision_result": vision_result
-        }
+            except Exception as e:
+                logger.warning(f"Error generating annotated chart: {e}")
 
-        if "SIGNAL: BUY" in final_signal.upper():
-            alert_message = f"""Strong Buy Signal for {ticker}
+            # Step 7: Final logic decision
+            analysis_data = {
+                "ticker": ticker,
+                "current_price": price,
+                "vwap": vwap,
+                "vwap_condition_met": vwap_met,
+                "last_volume": last_vol,
+                "avg_volume": avg_vol,
+                "volume_condition_met": volume_met,
+                "vision_analysis": vision_result
+            }
+
+            logger.info(f"Running final logic analysis with {self.llm_client.model_logic}...")
+            final_signal = self.llm_client.analyze_logic(ticker, analysis_data)
+
+            if not final_signal:
+                logger.error(f"Logic analysis failed for {ticker}")
+                return {"ticker": ticker, "signal": "HOLD", "reason": "Logic analysis failed"}
+
+            logger.info(f"Final Signal: {final_signal}")
+
+            # Step 8: Send alert if BUY signal
+            result = {
+                "ticker": ticker,
+                "signal": final_signal,
+                "price": price,
+                "vwap": vwap,
+                "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0,
+                "vision_result": vision_result,
+                "annotated_chart": annotated_path
+            }
+
+            if "SIGNAL: BUY" in final_signal.upper():
+                # Include GitHub Actions URL in alert
+                artifact_url = os.getenv('GITHUB_ACTIONS_URL', '')
+                alert_message = f"""Strong Buy Signal for {ticker}
 
 Price: ${price:.2f}
 VWAP: ${vwap:.2f}
 Volume Ratio: {last_vol/avg_vol:.1f}x
 
 Pattern: {vision_result}"""
-            self.alert_module.send_alert(ticker, alert_message)
+                if artifact_url:
+                    alert_message += f"\n\nView charts: {artifact_url}"
 
-            # Clean up chart file
-            try:
-                os.remove(chart_path)
-            except:
-                pass
+                self.alert_module.send_alert(ticker, alert_message)
 
-        return result
+            return result
+
+        finally:
+            # Clean up only the vision chart, NOT the annotated chart
+            # Annotated charts are kept for GitHub Artifacts
+            if chart_path and os.path.exists(chart_path):
+                try:
+                    os.remove(chart_path)
+                    logger.info(f"Cleaned up vision chart: {chart_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to clean up chart {chart_path}: {e}")
 
     def run(self):
         """Main execution loop."""
