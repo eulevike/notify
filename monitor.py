@@ -904,25 +904,35 @@ Pattern: {vision_result}"""
         except Exception as e:
             logger.error(f"Error saving last_run.json: {e}")
 
+    def _save_skipped_run(self, reason: str) -> None:
+        """
+        Save a skipped run status to last_run.json.
+
+        Args:
+            reason: Reason for skipping (e.g., "Weekend - market closed")
+        """
+        try:
+            last_run_data = {
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "status": "skipped",
+                "skip_reason": reason,
+                "total_analyzed": 0,
+                "buy_signals": 0,
+                "results": []
+            }
+
+            output_path = Path("last_run.json")
+            with open(output_path, 'w') as f:
+                json.dump(last_run_data, f, indent=2)
+
+            logger.info(f"Saved skipped run: {reason}")
+        except Exception as e:
+            logger.error(f"Error saving skipped run: {e}")
+
     def run(self):
         """Main execution loop."""
-        # Check if it's a weekday and market hours
-        now = datetime.utcnow()
-        weekday = now.weekday()  # 0=Monday, 6=Sunday
-        hour_utc = now.hour
-
-        # Skip weekends (Saturday=5, Sunday=6 in weekday())
-        if weekday >= 5:  # Saturday or Sunday
-            logger.info("Weekend - skipping analysis")
-            return
-
-        # Market hours check (London + New York)
-        # Winter: London 8:00-16:30 UTC, NY 14:30-21:00 UTC → Combined 8:00-21:00 UTC
-        # Summer: London 7:00-15:30 UTC, NY 13:30-20:00 UTC → Combined 7:00-20:00 UTC
-        # Allow hours 7-21 UTC to cover both markets
-        if hour_utc < 7 or hour_utc > 21:
-            logger.info(f"Outside market hours (UTC hour {hour_utc}) - skipping analysis")
-            return
+        # Monitor runs anytime - pre-market, during market, after-market, weekends
+        # No market hours restrictions
 
         logger.info("="*60)
         logger.info("Stock Monitor Started")

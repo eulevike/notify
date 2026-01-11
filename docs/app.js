@@ -140,6 +140,34 @@ function renderLastRun() {
         return;
     }
 
+    // Handle skipped runs
+    if (state.lastRun.status === 'skipped') {
+        const timestamp = state.lastRun.timestamp;
+        const timeDisplay = timestamp ? new Date(timestamp).toLocaleString() : 'Unknown';
+        elements.lastRunSummary.innerHTML = `
+            <div class="summary-stats">
+                <div class="stat">
+                    <span class="stat-label">Last Check</span>
+                    <span class="stat-value">${timeDisplay}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Status</span>
+                    <span class="stat-value" style="color: var(--warning)">Skipped</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Reason</span>
+                    <span class="stat-value">${state.lastRun.skip_reason || 'Market closed'}</span>
+                </div>
+            </div>
+            <p class="center-note">
+                Click <strong>Run on GitHub</strong> to run the monitor manually (bypasses market hours)
+            </p>
+        `;
+        elements.lastRunResults.innerHTML = '';
+        elements.chartsSection.style.display = 'none';
+        return;
+    }
+
     // Summary
     const timestamp = state.lastRun.timestamp;
     const timeDisplay = timestamp ? new Date(timestamp).toLocaleString() : 'No data yet';
