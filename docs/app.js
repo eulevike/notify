@@ -141,12 +141,13 @@ function renderLastRun() {
     }
 
     // Summary
-    const date = new Date(state.lastRun.timestamp);
+    const timestamp = state.lastRun.timestamp;
+    const timeDisplay = timestamp ? new Date(timestamp).toLocaleString() : 'No data yet';
     elements.lastRunSummary.innerHTML = `
         <div class="summary-stats">
             <div class="stat">
                 <span class="stat-label">Time</span>
-                <span class="stat-value">${date.toLocaleString()}</span>
+                <span class="stat-value">${timeDisplay}</span>
             </div>
             <div class="stat">
                 <span class="stat-label">Analyzed</span>
