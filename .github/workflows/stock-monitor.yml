@@ -27,6 +27,8 @@ jobs:
         env:
           ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          MODEL_VISION: glm-4-plus
+          MODEL_LOGIC: glm-4-plus
         run: python monitor.py
 
       - name: Upload log (on failure)
