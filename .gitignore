@@ -14,11 +14,7 @@ build/
 venv/
 ENV/
 
-# User settings (keep local version)
-settings.json
-
-# Generated run data
-last_run.json
+# Note: settings.json and last_run.json are now committed for the public UI
 
 # Generated charts
 *.png

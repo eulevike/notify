@@ -44,7 +44,16 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: Upload last_run.json
+      - name: Commit last_run.json to repo
+        if: always()
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add last_run.json
+          git commit -m "Update last_run.json [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
+
+      - name: Upload last_run.json (artifact backup)
         if: always()
         uses: actions/upload-artifact@v4
         with:
