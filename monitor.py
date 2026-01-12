@@ -854,13 +854,18 @@ class StockMonitor:
             if "SIGNAL: BUY" in final_signal.upper():
                 # Include GitHub Actions URL in alert
                 artifact_url = os.getenv('GITHUB_ACTIONS_URL', '')
+                # Use parsed pattern info to avoid newlines in message
+                pattern_name = pattern_info.get('pattern_detected', 'Unknown')
+                pattern_reasoning = pattern_info.get('reasoning', '')[:100]  # Limit reasoning length
                 alert_message = f"""Strong Buy Signal for {ticker}
 
 Price: ${price:.2f}
 VWAP: ${vwap:.2f}
 Volume Ratio: {last_vol/avg_vol:.1f}x
 
-Pattern: {vision_result}"""
+Pattern: {pattern_name}"""
+                if pattern_reasoning:
+                    alert_message += f"\n{pattern_reasoning}..."
                 if artifact_url:
                     alert_message += f"\n\nView charts: {artifact_url}"
 
