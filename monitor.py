@@ -733,7 +733,40 @@ class StockMonitor:
                 logger.warning(f"Insufficient data for {ticker}")
                 return None
 
-            # Step 2: Generate basic chart for all tickers (always)
+            # Step 2: Check VWAP condition (cheap check first)
+            vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
+            logger.info(f"VWAP Check: Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
+
+            if not vwap_met:
+                logger.info(f"{ticker}: Price below VWAP, HOLD signal (skipping chart generation and vision analysis)")
+                return {
+                    "ticker": ticker,
+                    "signal": "HOLD",
+                    "reason": "Price below VWAP",
+                    "price": price,
+                    "vwap": vwap,
+                    "volume_ratio": 0
+                }
+
+            # Step 3: Check Volume condition (cheap check second)
+            volume_met, last_vol, avg_vol = self.analysis_engine.check_volume_condition(data)
+            logger.info(f"Volume Check: Last={last_vol:,.0f} vs Avg={avg_vol:,.0f} (2x={2*avg_vol:,.0f}) - {'✓ PASS' if volume_met else '✗ FAIL'}")
+
+            if not volume_met:
+                logger.info(f"{ticker}: Volume condition not met, HOLD signal (skipping chart generation and vision analysis)")
+                return {
+                    "ticker": ticker,
+                    "signal": "HOLD",
+                    "reason": "Volume below 2x average",
+                    "price": price,
+                    "vwap": vwap,
+                    "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0
+                }
+
+            # Step 4: Both VWAP and Volume passed - now generate chart and run vision analysis
+            logger.info(f"{ticker}: VWAP and Volume conditions met - proceeding with chart generation and vision analysis")
+
+            # Generate basic chart
             chart_path = self.analysis_engine.generate_chart(ticker, data)
             if not chart_path:
                 logger.error(f"Failed to generate chart for {ticker}")
@@ -742,7 +775,7 @@ class StockMonitor:
             # Encode chart for API
             image_base64 = self.analysis_engine.encode_image(chart_path)
 
-            # Step 3: Vision analysis (always run for pattern detection)
+            # Vision analysis (only run if VWAP and Volume passed)
             logger.info(f"Running vision analysis with {self.llm_client.model_vision}...")
             vision_result = self.llm_client.analyze_chart_vision(ticker, image_base64)
 
@@ -768,49 +801,16 @@ class StockMonitor:
                 logger.warning(f"Could not parse vision result as JSON")
                 pattern_info = {}
 
-            # Step 4: Generate annotated chart for ALL tickers (kept for artifacts)
+            # Generate annotated chart (only for tickers that pass filters)
             try:
                 annotated_path = self.analysis_engine.generate_annotated_chart(ticker, data, pattern_info)
                 if annotated_path:
                     logger.info(f"Annotated chart saved: {annotated_path}")
             except Exception as e:
                 logger.warning(f"Error generating annotated chart: {e}")
+                annotated_path = None
 
-            # Step 5: Check VWAP condition
-            vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
-            logger.info(f"VWAP Check: Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
-
-            if not vwap_met:
-                logger.info(f"{ticker}: Price below VWAP, HOLD signal")
-                return {
-                    "ticker": ticker,
-                    "signal": "HOLD",
-                    "reason": "Price below VWAP",
-                    "price": price,
-                    "vwap": vwap,
-                    "volume_ratio": 0,
-                    "vision_result": vision_result,
-                    "annotated_chart": annotated_path
-                }
-
-            # Step 6: Check Volume condition
-            volume_met, last_vol, avg_vol = self.analysis_engine.check_volume_condition(data)
-            logger.info(f"Volume Check: Last={last_vol:,.0f} vs Avg={avg_vol:,.0f} (2x={2*avg_vol:,.0f}) - {'✓ PASS' if volume_met else '✗ FAIL'}")
-
-            if not volume_met:
-                logger.info(f"{ticker}: Volume condition not met, HOLD signal")
-                return {
-                    "ticker": ticker,
-                    "signal": "HOLD",
-                    "reason": "Volume below 2x average",
-                    "price": price,
-                    "vwap": vwap,
-                    "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0,
-                    "vision_result": vision_result,
-                    "annotated_chart": annotated_path
-                }
-
-            # Step 7: Final logic decision (only if all conditions passed)
+            # Step 5: Final logic decision (only if all conditions passed)
             analysis_data = {
                 "ticker": ticker,
                 "current_price": price,
@@ -840,7 +840,7 @@ class StockMonitor:
 
             logger.info(f"Final Signal: {final_signal}")
 
-            # Step 8: Send alert if BUY signal
+            # Step 6: Send alert if BUY signal
             result = {
                 "ticker": ticker,
                 "signal": final_signal,

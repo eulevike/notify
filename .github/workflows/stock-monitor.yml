@@ -2,8 +2,9 @@ name: Stock Monitor
 
 on:
   schedule:
-    # Run every hour, every day (pre-market, market, after-market, weekends)
-    - cron: '2 * * * *'
+    # Run every hour from 7:00-22:00 UTC (8:00-23:00 London winter / 7:00-22:00 London summer), Monday-Friday only
+    # Using 7-22 UTC ensures we cover London time year-round (GMT/BST)
+    - cron: '2 7-22 * * 1-5'
   workflow_dispatch:  # Allow manual trigger anytime
 
 jobs:
