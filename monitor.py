@@ -965,19 +965,24 @@ Pattern: {vision_result}"""
                 "results": result_items
             }
 
-            # Save to file
-            output_path = Path("last_run.json")
+            # Determine output file based on exchange
+            exchange = os.getenv("EXCHANGE", "").lower()
+            if exchange:
+                output_path = Path(f"last_run_{exchange}.json")
+            else:
+                output_path = Path("last_run.json")
+
             with open(output_path, 'w') as f:
                 json.dump(last_run_data, f, indent=2)
 
-            logger.info(f"Saved last_run.json with {len(result_items)} results")
+            logger.info(f"Saved {output_path} with {len(result_items)} results")
 
         except Exception as e:
             logger.error(f"Error saving last_run.json: {e}")
 
     def _save_skipped_run(self, reason: str) -> None:
         """
-        Save a skipped run status to last_run.json.
+        Save a skipped run status to exchange-specific JSON file.
 
         Args:
             reason: Reason for skipping (e.g., "Weekend - market closed")
@@ -992,11 +997,17 @@ Pattern: {vision_result}"""
                 "results": []
             }
 
-            output_path = Path("last_run.json")
+            # Determine output file based on exchange
+            exchange = os.getenv("EXCHANGE", "").lower()
+            if exchange:
+                output_path = Path(f"last_run_{exchange}.json")
+            else:
+                output_path = Path("last_run.json")
+
             with open(output_path, 'w') as f:
                 json.dump(last_run_data, f, indent=2)
 
-            logger.info(f"Saved skipped run: {reason}")
+            logger.info(f"Saved skipped run to {output_path}: {reason}")
         except Exception as e:
             logger.error(f"Error saving skipped run: {e}")
 

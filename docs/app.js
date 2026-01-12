@@ -20,10 +20,14 @@ const elements = {
 
 // Raw GitHub content URLs
 function getRawUrls() {
+    const baseUrl = `https://raw.githubusercontent.com/${CONFIG.repo}/main`;
     return {
-        tickers: `https://raw.githubusercontent.com/${CONFIG.repo}/main/tickers.txt`,
-        lastRun: `https://raw.githubusercontent.com/${CONFIG.repo}/main/last_run.json`,
-        settings: `https://raw.githubusercontent.com/${CONFIG.repo}/main/settings.json`,
+        tickers: `${baseUrl}/tickers.txt`,
+        lastRun: `${baseUrl}/last_run.json`,
+        lastRunLSE: `${baseUrl}/last_run_lse.json`,
+        lastRunUS: `${baseUrl}/last_run_us.json`,
+        lastRunMU: `${baseUrl}/last_run_mu.json`,
+        settings: `${baseUrl}/settings.json`,
         workflows: `https://github.com/${CONFIG.repo}/actions`
     };
 }
@@ -64,13 +68,20 @@ async function loadAllData() {
             state.tickers = [];
         }
 
-        // Fetch last_run.json
-        const lastRunResponse = await fetch(urls.lastRun);
-        if (lastRunResponse.ok) {
-            state.lastRun = await lastRunResponse.json();
-        } else {
-            state.lastRun = null;
-        }
+        // Fetch all exchange last_run files and merge them
+        const [lseResponse, usResponse, muResponse] = await Promise.all([
+            fetch(urls.lastRunLSE),
+            fetch(urls.lastRunUS),
+            fetch(urls.lastRunMU)
+        ]);
+
+        const exchanges = [];
+        if (lseResponse.ok) exchanges.push(await lseResponse.json());
+        if (usResponse.ok) exchanges.push(await usResponse.json());
+        if (muResponse.ok) exchanges.push(await muResponse.json());
+
+        // Merge exchange results into a single view
+        state.lastRun = mergeExchangeResults(exchanges);
 
         // Fetch settings
         const settingsResponse = await fetch(urls.settings);
@@ -91,6 +102,70 @@ async function loadAllData() {
     } finally {
         state.isLoading = false;
     }
+}
+
+// Merge results from multiple exchanges into a single view
+function mergeExchangeResults(exchanges) {
+    if (exchanges.length === 0) return null;
+
+    // Filter out null/undefined exchanges
+    const validExchanges = exchanges.filter(e => e !== null && e !== undefined);
+    if (validExchanges.length === 0) return null;
+
+    // Sort by timestamp (most recent first)
+    validExchanges.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // Use the most recent timestamp for display
+    const merged = {
+        timestamp: validExchanges[0].timestamp,
+        status: 'completed',
+        total_analyzed: 0,
+        buy_signals: 0,
+        results: [],
+        exchanges: [] // Track which exchanges contributed
+    };
+
+    // Merge all results
+    validExchanges.forEach(exchange => {
+        if (exchange.results) {
+            merged.total_analyzed += exchange.total_analyzed || 0;
+            merged.buy_signals += exchange.buy_signals || 0;
+            merged.results.push(...(exchange.results || []));
+
+            // Track exchange info
+            const exchangeName = getExchangeName(exchange);
+            if (exchangeName && !merged.exchanges.includes(exchangeName)) {
+                merged.exchanges.push(exchangeName);
+            }
+        }
+    });
+
+    // If all were skipped
+    if (merged.total_analyzed === 0 && validExchanges.some(e => e.status === 'skipped')) {
+        const skipped = validExchanges.find(e => e.status === 'skipped');
+        return skipped;
+    }
+
+    return merged;
+}
+
+// Get exchange name from result data
+function getExchangeName(exchange) {
+    // Try to determine exchange from the data source
+    if (exchange.results && exchange.results.length > 0) {
+        const ticker = exchange.results[0].ticker || '';
+        if (ticker.endsWith('.L')) return 'LSE';
+        if (ticker.endsWith('.MU')) return 'Munich';
+        return 'US';
+    }
+    return null;
+}
+
+// Get exchange name from ticker symbol
+function getExchangeFromTicker(ticker) {
+    if (ticker.endsWith('.L')) return 'LSE';
+    if (ticker.endsWith('.MU')) return 'Munich';
+    return 'US';
 }
 
 // Render tickers list
@@ -150,11 +225,18 @@ function renderLastRun() {
     // Summary
     const timestamp = state.lastRun.timestamp;
     const timeDisplay = timestamp ? new Date(timestamp).toLocaleString() : 'No data yet';
+    const exchanges = state.lastRun.exchanges || [];
+    const exchangesDisplay = exchanges.length > 0 ? exchanges.join(', ') : 'All';
+
     elements.lastRunSummary.innerHTML = `
         <div class="summary-stats">
             <div class="stat">
                 <span class="stat-label">Time</span>
                 <span class="stat-value">${timeDisplay}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Exchanges</span>
+                <span class="stat-value">${exchangesDisplay}</span>
             </div>
             <div class="stat">
                 <span class="stat-label">Analyzed</span>
@@ -174,13 +256,15 @@ function renderLastRun() {
         return;
     }
 
-    let tableHtml = '<table><thead><tr><th>Ticker</th><th>Signal</th><th>Price</th><th>VWAP</th><th>Volume Ratio</th><th>Pattern</th></tr></thead><tbody>';
+    let tableHtml = '<table><thead><tr><th>Ticker</th><th>Exchange</th><th>Signal</th><th>Price</th><th>VWAP</th><th>Volume Ratio</th><th>Pattern</th></tr></thead><tbody>';
 
     results.forEach(result => {
         const signalClass = result.signal === 'BUY' ? 'signal-buy' : 'signal-hold';
+        const exchange = getExchangeFromTicker(result.ticker);
         tableHtml += `
             <tr>
                 <td>${result.ticker}</td>
+                <td><span class="exchange-badge exchange-${exchange.toLowerCase()}">${exchange}</span></td>
                 <td class="${signalClass}">${result.signal}</td>
                 <td>$${result.price?.toFixed(2) || '-'}</td>
                 <td>$${result.vwap?.toFixed(2) || '-'}</td>
