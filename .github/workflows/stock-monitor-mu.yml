@@ -1,0 +1,71 @@
+name: Stock Monitor - Munich
+
+on:
+  schedule:
+    # Run every hour from 7:00-15:00 UTC (8:00-16:00 CET winter / 7:00-15:00 CEST summer), Monday-Friday only
+    # Munich/Xetra hours: 9:00-17:30 CET
+    - cron: '2 7-15 * * 1-5'
+  workflow_dispatch:  # Allow manual trigger anytime
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance pandas numpy mplfinance requests python-dotenv
+
+      - name: Run stock monitor - Munich tickers only
+        env:
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          MODEL_VISION: glm-4-plus
+          MODEL_LOGIC: glm-4-plus
+          GITHUB_ACTIONS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EXCHANGE: MU
+        run: python monitor.py
+
+      - name: Upload annotated charts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-charts-mu-${{ github.run_number }}
+          path: "*_annotated.png"
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Commit last_run.json to repo
+        if: always()
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add last_run.json
+          git commit -m "Update last_run.json [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
+
+      - name: Upload last_run.json (artifact backup)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: last-run-data-mu
+          path: last_run.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Upload log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-logs-mu
+          path: monitor.log

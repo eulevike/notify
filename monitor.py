@@ -1016,6 +1016,28 @@ Pattern: {vision_result}"""
             logger.error("No tickers loaded. Exiting.")
             return
 
+        # Filter tickers by exchange if EXCHANGE env var is set
+        exchange = os.getenv("EXCHANGE", "").upper()
+        if exchange:
+            if exchange == "LSE":
+                # Only tickers ending with .L (London Stock Exchange)
+                tickers = [t for t in tickers if t.endswith(".L")]
+                logger.info(f"Filtered to LSE tickers only: {tickers}")
+            elif exchange == "US":
+                # Only tickers NOT ending with .L or .MU (US exchanges)
+                tickers = [t for t in tickers if not (t.endswith(".L") or t.endswith(".MU"))]
+                logger.info(f"Filtered to US tickers only: {tickers}")
+            elif exchange == "MU":
+                # Only tickers ending with .MU (Munich Stock Exchange)
+                tickers = [t for t in tickers if t.endswith(".MU")]
+                logger.info(f"Filtered to Munich tickers only: {tickers}")
+            else:
+                logger.warning(f"Unknown EXCHANGE value: {exchange}. Using all tickers.")
+
+        if not tickers:
+            logger.info(f"No tickers found for exchange '{exchange}'. Exiting.")
+            return
+
         results = []
 
         # Analyze each ticker

@@ -1,10 +1,10 @@
-name: Stock Monitor
+name: Stock Monitor - LSE
 
 on:
   schedule:
-    # Run every hour from 7:00-22:00 UTC (8:00-23:00 London winter / 7:00-22:00 London summer), Monday-Friday only
-    # Using 7-22 UTC ensures we cover London time year-round (GMT/BST)
-    - cron: '2 7-22 * * 1-5'
+    # Run every hour from 7:00-16:00 UTC (8:00-17:00 London winter / 7:00-16:00 London summer), Monday-Friday only
+    # London Stock Exchange hours: 8:00-16:30 London time
+    - cron: '2 7-16 * * 1-5'
   workflow_dispatch:  # Allow manual trigger anytime
 
 jobs:
@@ -26,20 +26,21 @@ jobs:
         run: |
           pip install yfinance pandas numpy mplfinance requests python-dotenv
 
-      - name: Run stock monitor
+      - name: Run stock monitor - LSE tickers only
         env:
           ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           MODEL_VISION: glm-4-plus
           MODEL_LOGIC: glm-4-plus
           GITHUB_ACTIONS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EXCHANGE: LSE
         run: python monitor.py
 
       - name: Upload annotated charts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stock-charts-${{ github.run_number }}
+          name: stock-charts-lse-${{ github.run_number }}
           path: "*_annotated.png"
           retention-days: 7
           if-no-files-found: ignore
@@ -57,7 +58,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: last-run-data
+          name: last-run-data-lse
           path: last_run.json
           retention-days: 7
           if-no-files-found: ignore
@@ -66,5 +67,5 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: monitor-logs
+          name: monitor-logs-lse
           path: monitor.log
