@@ -1,14 +1,25 @@
 {
-  "timestamp": "2026-01-12T15:22:21Z",
+  "timestamp": "2026-01-12T15:29:17Z",
   "status": "completed",
-  "total_analyzed": 1,
+  "total_analyzed": 2,
   "buy_signals": 0,
   "results": [
     {
-      "ticker": "HY9H.MU",
+      "ticker": "RR.L",
       "signal": "HOLD",
-      "price": 438.0,
-      "vwap": 445.1498513999686,
+      "price": 1295.5,
+      "vwap": 1270.0114602743602,
+      "volume_ratio": 1.4520563019381054,
+      "pattern": "Unknown",
+      "pattern_signal": "NEUTRAL",
+      "reasoning": "",
+      "chart_path": ""
+    },
+    {
+      "ticker": "BC94.L",
+      "signal": "HOLD",
+      "price": 2362.0,
+      "vwap": 2391.2423428838574,
       "volume_ratio": 0,
       "pattern": "Unknown",
       "pattern_signal": "NEUTRAL",
