@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-12T09:42:34Z",
+  "timestamp": "2026-01-12T10:35:49Z",
   "status": "completed",
   "total_analyzed": 11,
   "buy_signals": 0,
@@ -12,7 +12,7 @@
       "volume_ratio": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no clear engulfing pattern or hammer formation as it doesn't engulf the previous body and lacks the context of a prior downward movement for a hammer.",
+      "reasoning": "The last candle shows a small green body, but there's no clear preceding bearish candle to form a Bullish Engulfing pattern, nor is there a downward movement followed by a reversal to form a Hammer pattern.",
       "chart_path": "aapl_annotated.png"
     },
     {
@@ -23,7 +23,7 @@
       "volume_ratio": 2.940215794597646,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no clear prior bearish candle to form a Bullish Engulfing pattern, and no significant downward movement preceding it to form a Hammer pattern.",
+      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't completely engulf the previous red body. It also doesn't meet the Hammer criteria as there's no evidence of a prior downward movement leading to a reversal.",
       "chart_path": "msft_annotated.png"
     },
     {
@@ -34,7 +34,7 @@
       "volume_ratio": 4.0051465179708154,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no preceding bearish candle to form a Bullish Engulfing pattern, and no significant downward movement to confirm a Hammer pattern.",
+      "reasoning": "The last candle shows a small green body, but there's no preceding bearish candle to form a Bullish Engulfing pattern. The previous candle was also green, so no reversal pattern is present.",
       "chart_path": "googl_annotated.png"
     },
     {
@@ -45,7 +45,7 @@
       "volume_ratio": 1.8041356660029286,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't engulf the previous red body. It also doesn't meet the Hammer criteria as there's no clear prior downward movement and the body isn't positioned at the top of a range.",
+      "reasoning": "The last candle shows a small green body, but there's no clear prior bearish candle to form an engulfing pattern, nor is there a distinct hammer formation with a small body at the top of a downward movement.",
       "chart_path": "tsla_annotated.png"
     },
     {
@@ -56,7 +56,7 @@
       "volume_ratio": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't completely engulf the previous red body. It also doesn't meet the Hammer criteria as there's no significant downward movement preceding it.",
+      "reasoning": "The last candle shows a small green body, but there's no clear engulfing pattern or hammer formation as it doesn't engulf the previous body and lacks the context of a prior downward movement for a hammer.",
       "chart_path": "nvda_annotated.png"
     },
     {
@@ -67,7 +67,7 @@
       "volume_ratio": 3.7175409351062276,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear prior bearish candle to form a Bullish Engulfing pattern, and no significant downward movement preceding it to form a Hammer pattern.",
+      "reasoning": "The last candle shows a small green body, but there's no clear prior bearish body to form a Bullish Engulfing pattern. The lack of a preceding downward trend also prevents a Hammer pattern from being confirmed.",
       "chart_path": "meta_annotated.png"
     },
     {
@@ -78,7 +78,7 @@
       "volume_ratio": 4.223945691287859,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no clear prior bearish candle to form a Bullish Engulfing pattern. The previous candle was also green, so no Hammer pattern is present as it requires a preceding downward movement.",
+      "reasoning": "The last candle shows a small green body, but there's no clear engulfing pattern or hammer formation. The previous candle was also green, so there's no bearish body to be engulfed, and no significant downward movement preceding the small body to suggest a hammer reversal.",
       "chart_path": "amzn_annotated.png"
     },
     {
@@ -89,7 +89,7 @@
       "volume_ratio": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish pattern identified based on body-only analysis. The last candle's body is small and doesn't show engulfing characteristics or hammer formation.",
+      "reasoning": "The last candle has a small green body, but it doesn't engulf the previous red body, and there's no clear downward movement preceding it to form a Hammer pattern.",
       "chart_path": "amd_annotated.png"
     },
     {
@@ -100,7 +100,7 @@
       "volume_ratio": 5.024517564722003,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no preceding bearish body to form a Bullish Engulfing pattern, and no significant downward movement prior to suggest a Hammer pattern.",
+      "reasoning": "No clear bullish pattern identified based on body-only analysis. The last candle's body does not form a Bullish Engulfing pattern (no prior smaller red body to engulf) nor does it meet the criteria for a Hammer pattern (no prior downward movement established).",
       "chart_path": "spy_annotated.png"
     },
     {
@@ -111,7 +111,7 @@
       "volume_ratio": 1.2342854083537695,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no larger green body engulfing a prior red body) or hammer pattern (no small body at the top of a downward movement). The body size is small and doesn't show strong bullish momentum.",
+      "reasoning": "No clear bullish pattern detected based on body-only analysis. The last candle's body size and position relative to prior candles do not form a Bullish Engulfing or Hammer pattern.",
       "chart_path": "qqq_annotated.png"
     },
     {
@@ -122,7 +122,7 @@
       "volume_ratio": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear engulfing pattern or hammer formation. The previous candle was also green, so no bearish body was engulfed, and there's no evidence of a prior downward movement to confirm a hammer pattern.",
+      "reasoning": "The last candle shows a small green body, but there is no clear prior bearish candle to form a Bullish Engulfing pattern. The previous candle was also green, so no reversal pattern is present. The body size is small and doesn't indicate a strong bullish signal.",
       "chart_path": "iren_annotated.png"
     }
   ]
