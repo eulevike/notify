@@ -544,6 +544,7 @@ IMPORTANT: This is a wickless chart - focus ONLY on the real body (open to close
 Look for these bullish patterns:
 1. Bullish Engulfing: A smaller bearish/red body followed by a larger bullish/green body that completely engulfs the previous body
 2. Hammer (bullish reversal): Small body at top with previous downward movement, followed by reversal
+3. Swing Low followed by Higher High: A clear swing low point (lowest body) followed by subsequent candles making higher highs, indicating upward momentum from a trough
 
 For the LAST completed candle, analyze:
 - Body size (close relative to open)
@@ -552,7 +553,7 @@ For the LAST completed candle, analyze:
 
 Reply in this exact JSON format:
 {{
-    "pattern_detected": "Bullish Engulfing" or "Hammer" or "None",
+    "pattern_detected": "Bullish Engulfing" or "Hammer" or "Swing Low Higher High" or "None",
     "confidence": "high" or "medium" or "low",
     "reasoning": "brief explanation based on body analysis",
     "signal": "BULLISH" or "NEUTRAL" or "BEARISH"
