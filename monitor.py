@@ -123,8 +123,12 @@ class AnalysisEngine:
                 logger.info(f"Fetching data for {ticker}... (attempt {attempt + 1}/{max_retries})")
                 ticker_obj = yf.Ticker(ticker)
 
-                # Fetch 15-minute data for 60 days (max available for 15-min interval)
-                data = ticker_obj.history(period="2mo", interval="15m", prepost=False)
+                # Fetch 15-minute data for ~59 days (stay under Yahoo's 60-day limit)
+                # Yahoo returns error if we request exactly 60 days, so we use 59 days
+                from datetime import datetime, timedelta
+                end_date = datetime.now()
+                start_date = end_date - timedelta(days=59)
+                data = ticker_obj.history(start=start_date, end=end_date, interval="15m", prepost=False)
 
                 if data.empty:
                     logger.warning(f"No data returned for {ticker} (attempt {attempt + 1})")
