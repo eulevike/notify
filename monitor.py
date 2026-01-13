@@ -104,16 +104,16 @@ class AnalysisEngine:
     def __init__(self, config: Config):
         self.config = config
         self.data_cache: Dict[str, pd.DataFrame] = {}
-        self.api_key = os.getenv("POLYGON_API_KEY", "")
-        self.use_polygon = bool(self.api_key)
-        if self.use_polygon:
-            logger.info("Using Polygon.io API for data fetching")
+        self.api_key = os.getenv("FINNHUB_API_KEY", "")
+        self.use_finnhub = bool(self.api_key)
+        if self.use_finnhub:
+            logger.info("Using Finnhub API for data fetching")
         else:
-            logger.info("POLYGON_API_KEY not set, using yfinance fallback")
+            logger.info("FINNHUB_API_KEY not set, using yfinance fallback")
 
     def fetch_data(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Fetch 15-minute candle data using Polygon.io API or yfinance fallback.
+        Fetch 15-minute candle data using Finnhub API or yfinance fallback.
 
         Args:
             ticker: Stock ticker symbol
@@ -123,104 +123,91 @@ class AnalysisEngine:
         """
         import time
 
-        # Try Polygon.io first if API key is available
-        if self.use_polygon:
-            data = self._fetch_polygon_data(ticker)
+        # Try Finnhub first if API key is available
+        if self.use_finnhub:
+            data = self._fetch_finnhub_data(ticker)
             if data is not None:
                 return data
-            logger.warning(f"Polygon.io fetch failed for {ticker}, falling back to yfinance")
+            logger.warning(f"Finnhub fetch failed for {ticker}, falling back to yfinance")
 
         # Fallback to yfinance
         return self._fetch_yfinance_data(ticker)
 
-    def _fetch_polygon_data(self, ticker: str) -> Optional[pd.DataFrame]:
+    def _fetch_finnhub_data(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Fetch data from Polygon.io Aggregates API.
+        Fetch data from Finnhub.io Stock Candles API.
 
-        Note: Polygon doesn't support 15-minute directly. We fetch 1-minute bars
-        and resample to 15-minute.
+        Note: Finnhub supports 15-minute candles directly (no resampling needed).
+        Free tier: 60 calls/minute.
 
-        Currently fetching 30 days (can be increased if API supports it).
+        Currently fetching 30 days (can be increased if needed).
         """
         import time
         import requests
 
         try:
-            # Normalize ticker for Polygon (remove suffixes like .L or .MU)
-            # For US stocks, use as-is. For international, we'll need special handling
-            poly_ticker = ticker.replace('.L', '').replace('.MU', '')
+            # Normalize ticker for Finnhub
+            # For US stocks, use as-is. For international, Finnhub uses different symbols
+            finnhub_ticker = ticker.replace('.L', '-L').replace('.MU', '.MU')
 
-            # Calculate date range: 30 days back (test if 3 years is too much for free tier)
-            from datetime import datetime, timedelta
+            # Calculate date range: 30 days back
             end_date = datetime.now()
-            start_date = end_date - timedelta(days=30)  # Start with 30 days, can increase later
+            start_date = end_date - timedelta(days=30)
 
-            # Convert to Unix timestamps in milliseconds
-            start_ts = int(start_date.timestamp() * 1000)
-            end_ts = int(end_date.timestamp() * 1000)
+            # Convert to Unix timestamps in seconds
+            start_ts = int(start_date.timestamp())
+            end_ts = int(end_date.timestamp())
 
-            logger.info(f"Fetching Polygon.io data for {ticker} (as {poly_ticker})...")
+            logger.info(f"Fetching Finnhub data for {ticker} (as {finnhub_ticker})...")
 
-            # Polygon.io Aggregates API for 1-minute bars (then resample to 15-min)
-            # Polygon doesn't support 15min directly, only 'minute' (1-min)
+            # Finnhub Stock Candles API for 15-minute bars
             url = (
-                f"https://api.polygon.io/v2/aggs/ticker/{poly_ticker}"
-                f"/range/1/minute/{start_ts}/{end_ts}"
-                f"?adjusted=true&sort=asc&limit=50000&apiKey={self.api_key}"
+                f"https://finnhub.io/api/v1/stock/candle"
+                f"?symbol={finnhub_ticker}"
+                f"&resolution=15"
+                f"&from={start_ts}"
+                f"&to={end_ts}"
+                f"&token={self.api_key}"
             )
 
             response = requests.get(url, timeout=30)
 
             if response.status_code != 200:
-                logger.error(f"Polygon.io API error: {response.status_code} - {response.text}")
+                logger.error(f"Finnhub API error: {response.status_code} - {response.text}")
                 return None
 
             result = response.json()
-            logger.debug(f"Polygon.io raw response keys: {result.keys()}")
-            logger.debug(f"Polygon.io response: {result}")
+            logger.debug(f"Finnhub raw response keys: {result.keys()}")
 
-            if result.get("status") != "OK":
-                logger.warning(f"Polygon.io status not OK: {result.get('status')}, error: {result.get('error')}")
+            if result.get("s") != "ok":
+                logger.warning(f"Finnhub status not OK: {result.get('s')}, error: {result.get('error')}")
                 return None
 
-            if not result.get("results"):
-                logger.warning(f"Polygon.io returned empty results for {ticker} (query may be out of range)")
+            if not result.get("o") or len(result["o"]) == 0:
+                logger.warning(f"Finnhub returned empty results for {ticker}")
                 return None
 
-            bars = result["results"]
-            if len(bars) == 0:
-                logger.warning(f"Polygon.io returned empty bars array for {ticker}")
-                return None
+            # Finnhub returns arrays: o (open), h (high), l (low), c (close), v (volume), t (timestamp)
             data_list = []
 
-            for bar in bars:
-                # Polygon timestamps are in milliseconds
+            for i, ts in enumerate(result["t"]):
                 data_list.append({
-                    "Open": bar["o"],
-                    "High": bar["h"],
-                    "Low": bar["l"],
-                    "Close": bar["c"],
-                    "Volume": bar["v"],
-                    "Datetime": pd.to_datetime(bar["t"], unit="ms")
+                    "Open": result["o"][i],
+                    "High": result["h"][i],
+                    "Low": result["l"][i],
+                    "Close": result["c"][i],
+                    "Volume": result["v"][i],
+                    "Datetime": pd.to_datetime(ts, unit="s")
                 })
 
             df = pd.DataFrame(data_list)
             df.set_index("Datetime", inplace=True)
 
-            # Resample 1-minute bars to 15-minute bars
-            df_15m = df.resample('15min').agg({
-                'Open': 'first',
-                'High': 'max',
-                'Low': 'min',
-                'Close': 'last',
-                'Volume': 'sum'
-            }).dropna()
-
-            logger.info(f"Fetched {len(df_15m)} 15-min candles from Polygon.io (resampled from {len(df)} 1-min bars) for {ticker}")
-            return df_15m
+            logger.info(f"Fetched {len(df)} 15-min candles from Finnhub for {ticker}")
+            return df
 
         except Exception as e:
-            logger.error(f"Error fetching Polygon.io data for {ticker}: {e}")
+            logger.error(f"Error fetching Finnhub data for {ticker}: {e}")
             return None
 
     def _fetch_yfinance_data(self, ticker: str) -> Optional[pd.DataFrame]:
@@ -1198,14 +1185,14 @@ Pattern: {pattern_name}"""
 
         # Analyze each ticker
         import time
-        # Polygon.io free tier: 5 calls/minute = 12 seconds between calls
+        # Finnhub free tier: 60 calls/minute = 1 second between calls (conservative)
         # yfinance: no rate limit, but 1 second delay is polite
-        polygon_delay = 12  # seconds
-        yfinance_delay = 1   # second
-        delay = polygon_delay if self.analysis_engine.use_polygon else yfinance_delay
+        finnhub_delay = 1   # seconds
+        yfinance_delay = 1  # seconds
+        delay = finnhub_delay if self.analysis_engine.use_finnhub else yfinance_delay
 
-        if self.analysis_engine.use_polygon:
-            logger.info(f"Using {delay}s delay between tickers (Polygon.io rate limit)")
+        if self.analysis_engine.use_finnhub:
+            logger.info(f"Using {delay}s delay between tickers (Finnhub rate limit)")
 
         for i, ticker in enumerate(tickers):
             try:

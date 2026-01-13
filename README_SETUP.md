@@ -18,6 +18,7 @@ Go to: https://github.com/YOUR_USERNAME/stock-monitor/settings/secrets/actions
 Add these secrets:
 - `ZAI_API_KEY` = your z.ai API key
 - `NTFY_TOPIC` = notifylevi (or your topic)
+- `FINNHUB_API_KEY` = your Finnhub API key (get free at https://finnhub.io/)
 
 ## 3. Enable Actions
 
