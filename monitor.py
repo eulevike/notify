@@ -104,10 +104,16 @@ class AnalysisEngine:
     def __init__(self, config: Config):
         self.config = config
         self.data_cache: Dict[str, pd.DataFrame] = {}
+        self.api_key = os.getenv("POLYGON_API_KEY", "")
+        self.use_polygon = bool(self.api_key)
+        if self.use_polygon:
+            logger.info("Using Polygon.io API for data fetching")
+        else:
+            logger.info("POLYGON_API_KEY not set, using yfinance fallback")
 
     def fetch_data(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Fetch 15-minute candle data for the past week with retry logic.
+        Fetch 15-minute candle data using Polygon.io API or yfinance fallback.
 
         Args:
             ticker: Stock ticker symbol
@@ -117,34 +123,120 @@ class AnalysisEngine:
         """
         import time
 
+        # Try Polygon.io first if API key is available
+        if self.use_polygon:
+            data = self._fetch_polygon_data(ticker)
+            if data is not None:
+                return data
+            logger.warning(f"Polygon.io fetch failed for {ticker}, falling back to yfinance")
+
+        # Fallback to yfinance
+        return self._fetch_yfinance_data(ticker)
+
+    def _fetch_polygon_data(self, ticker: str) -> Optional[pd.DataFrame]:
+        """
+        Fetch data from Polygon.io Aggregates API.
+
+        Returns up to 3 years of 15-minute data.
+        """
+        import time
+        import requests
+
+        try:
+            # Normalize ticker for Polygon (remove suffixes like .L or .MU)
+            # For US stocks, use as-is. For international, we'll need special handling
+            poly_ticker = ticker.replace('.L', '').replace('.MU', '')
+
+            # Calculate date range: 3 years back from today
+            from datetime import datetime, timedelta
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=365*3)  # 3 years
+
+            # Convert to Unix timestamps in milliseconds
+            start_ts = int(start_date.timestamp() * 1000)
+            end_ts = int(end_date.timestamp() * 1000)
+
+            logger.info(f"Fetching Polygon.io data for {ticker} (as {poly_ticker})...")
+
+            # Polygon.io Aggregates API for 15-minute bars
+            url = (
+                f"https://api.polygon.io/v2/aggs/ticker/{poly_ticker}"
+                f"/range/1/15minute/{start_ts}/{end_ts}"
+                f"?adjusted=true&sort=asc&limit=50000&apiKey={self.api_key}"
+            )
+
+            response = requests.get(url, timeout=30)
+
+            if response.status_code != 200:
+                logger.error(f"Polygon.io API error: {response.status_code} - {response.text}")
+                return None
+
+            result = response.json()
+
+            if result.get("status") != "OK" or not result.get("results"):
+                logger.warning(f"No data from Polygon.io for {ticker}")
+                return None
+
+            # Convert to DataFrame
+            bars = result["results"]
+            data_list = []
+
+            for bar in bars:
+                # Polygon timestamps are in milliseconds
+                data_list.append({
+                    "Open": bar["o"],
+                    "High": bar["h"],
+                    "Low": bar["l"],
+                    "Close": bar["c"],
+                    "Volume": bar["v"],
+                    "Datetime": pd.to_datetime(bar["t"], unit="ms")
+                })
+
+            df = pd.DataFrame(data_list)
+            df.set_index("Datetime", inplace=True)
+
+            logger.info(f"Fetched {len(df)} candles from Polygon.io for {ticker}")
+            return df
+
+        except Exception as e:
+            logger.error(f"Error fetching Polygon.io data for {ticker}: {e}")
+            return None
+
+    def _fetch_yfinance_data(self, ticker: str) -> Optional[pd.DataFrame]:
+        """
+        Fallback: Fetch data from yfinance (59 days max for 15-min).
+
+        Note: yfinance returns error for international tickers (.L, .MU)
+        with 15-min data, so Polygon.io is recommended.
+        """
+        import time
+
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                logger.info(f"Fetching data for {ticker}... (attempt {attempt + 1}/{max_retries})")
+                logger.info(f"Fetching yfinance data for {ticker}... (attempt {attempt + 1}/{max_retries})")
                 ticker_obj = yf.Ticker(ticker)
 
                 # Fetch 15-minute data for ~59 days (stay under Yahoo's 60-day limit)
-                # Yahoo returns error if we request exactly 60 days, so we use 59 days
                 from datetime import datetime, timedelta
                 end_date = datetime.now()
                 start_date = end_date - timedelta(days=59)
                 data = ticker_obj.history(start=start_date, end=end_date, interval="15m", prepost=False)
 
                 if data.empty:
-                    logger.warning(f"No data returned for {ticker} (attempt {attempt + 1})")
+                    logger.warning(f"No data returned from yfinance for {ticker} (attempt {attempt + 1})")
                     if attempt < max_retries - 1:
-                        time.sleep(2)  # Wait before retry
+                        time.sleep(2)
                         continue
                     return None
 
-                self.data_cache[ticker] = data
-                logger.info(f"Fetched {len(data)} candles for {ticker}")
+                logger.info(f"Fetched {len(data)} candles from yfinance for {ticker}")
                 return data
 
             except Exception as e:
-                logger.error(f"Error fetching data for {ticker} (attempt {attempt + 1}): {e}")
+                logger.error(f"Error fetching yfinance data for {ticker} (attempt {attempt + 1}): {e}")
                 if attempt < max_retries - 1:
-                    time.sleep(2)  # Wait before retry
+                    time.sleep(2)
                     continue
                 return None
 
@@ -1085,11 +1177,20 @@ Pattern: {pattern_name}"""
 
         # Analyze each ticker
         import time
+        # Polygon.io free tier: 5 calls/minute = 12 seconds between calls
+        # yfinance: no rate limit, but 1 second delay is polite
+        polygon_delay = 12  # seconds
+        yfinance_delay = 1   # second
+        delay = polygon_delay if self.analysis_engine.use_polygon else yfinance_delay
+
+        if self.analysis_engine.use_polygon:
+            logger.info(f"Using {delay}s delay between tickers (Polygon.io rate limit)")
+
         for i, ticker in enumerate(tickers):
             try:
                 # Add delay between tickers to avoid rate limiting
                 if i > 0:
-                    time.sleep(1)  # 1 second delay between tickers
+                    time.sleep(delay)
 
                 result = self.analyze_ticker(ticker)
                 if result:

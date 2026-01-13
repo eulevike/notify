@@ -33,6 +33,7 @@ jobs:
         env:
           ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
           MODEL_VISION: glm-4-plus
           MODEL_LOGIC: glm-4-plus
           GITHUB_ACTIONS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
