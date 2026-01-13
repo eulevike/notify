@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-13T11:17:55Z",
+  "timestamp": "2026-01-13T12:40:40Z",
   "status": "completed",
   "total_analyzed": 1,
   "buy_signals": 0,
@@ -8,7 +8,7 @@
       "ticker": "HY9H.MU",
       "signal": "HOLD",
       "price": 436.0,
-      "vwap": 445.08689070541936,
+      "vwap": 444.8458591217213,
       "volume_ratio": 0,
       "pattern": "Unknown",
       "pattern_signal": "NEUTRAL",
