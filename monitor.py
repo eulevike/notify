@@ -139,6 +139,8 @@ class AnalysisEngine:
 
         Note: Polygon doesn't support 15-minute directly. We fetch 1-minute bars
         and resample to 15-minute.
+
+        Currently fetching 30 days (can be increased if API supports it).
         """
         import time
         import requests
@@ -148,10 +150,10 @@ class AnalysisEngine:
             # For US stocks, use as-is. For international, we'll need special handling
             poly_ticker = ticker.replace('.L', '').replace('.MU', '')
 
-            # Calculate date range: 3 years back from today
+            # Calculate date range: 30 days back (test if 3 years is too much for free tier)
             from datetime import datetime, timedelta
             end_date = datetime.now()
-            start_date = end_date - timedelta(days=365*3)  # 3 years
+            start_date = end_date - timedelta(days=30)  # Start with 30 days, can increase later
 
             # Convert to Unix timestamps in milliseconds
             start_ts = int(start_date.timestamp() * 1000)
@@ -174,13 +176,21 @@ class AnalysisEngine:
                 return None
 
             result = response.json()
+            logger.debug(f"Polygon.io raw response keys: {result.keys()}")
+            logger.debug(f"Polygon.io response: {result}")
 
-            if result.get("status") != "OK" or not result.get("results"):
-                logger.warning(f"No data from Polygon.io for {ticker}")
+            if result.get("status") != "OK":
+                logger.warning(f"Polygon.io status not OK: {result.get('status')}, error: {result.get('error')}")
                 return None
 
-            # Convert to DataFrame
+            if not result.get("results"):
+                logger.warning(f"Polygon.io returned empty results for {ticker} (query may be out of range)")
+                return None
+
             bars = result["results"]
+            if len(bars) == 0:
+                logger.warning(f"Polygon.io returned empty bars array for {ticker}")
+                return None
             data_list = []
 
             for bar in bars:
