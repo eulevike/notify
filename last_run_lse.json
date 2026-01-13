@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-13T07:27:43Z",
+  "timestamp": "2026-01-13T08:35:04Z",
   "status": "completed",
   "total_analyzed": 2,
   "buy_signals": 0,
@@ -8,8 +8,8 @@
       "ticker": "RR.L",
       "signal": "HOLD",
       "price": 1293.5,
-      "vwap": 1270.8425665769623,
-      "volume_ratio": 0.8097436121806091,
+      "vwap": 1277.6885268016822,
+      "volume_ratio": 0.1600945980453239,
       "pattern": "Unknown",
       "pattern_signal": "NEUTRAL",
       "reasoning": "",
@@ -18,13 +18,13 @@
     {
       "ticker": "BC94.L",
       "signal": "HOLD",
-      "price": 2400.0,
-      "vwap": 2392.0821355236126,
-      "volume_ratio": 3.9735099337748347,
-      "pattern": "None",
+      "price": 2334.0,
+      "vwap": 2409.5877600979184,
+      "volume_ratio": 0,
+      "pattern": "Unknown",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no small body at the top after downward movement. No swing low followed by higher highs as the recent candles show mixed price action without a clear upward momentum from a trough.",
-      "chart_path": "bc94.l_annotated.png"
+      "reasoning": "",
+      "chart_path": ""
     }
   ]
 }
