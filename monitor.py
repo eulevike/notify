@@ -157,21 +157,34 @@ class AnalysisEngine:
         vwap = (typical_price * data['Volume']).cumsum() / data['Volume'].cumsum()
         return vwap
 
-    def check_volume_condition(self, data: pd.DataFrame) -> tuple[bool, float, float]:
+    def check_order_flow_condition(self, data: pd.DataFrame) -> tuple[bool, float, float, bool]:
         """
-        Check if volume of last candle > 2x the 10-period average.
+        Check order flow: highest high and higher low (bullish pressure).
+
+        Order Flow = Current candle making new highs AND higher lows than ALL historical data.
+        This indicates strong buying pressure and upward momentum across the entire dataset.
 
         Returns:
-            Tuple of (condition_met, last_volume, avg_volume)
+            Tuple of (condition_met, current_high, highest_high, higher_low)
         """
-        if len(data) < 11:
-            return False, 0.0, 0.0
+        if len(data) < 2:
+            return False, 0.0, 0.0, False
 
-        last_volume = data['Volume'].iloc[-1]
-        avg_volume = data['Volume'].iloc[-11:-1].mean()
+        current_high = data['High'].iloc[-1]
+        current_low = data['Low'].iloc[-1]
 
-        condition_met = last_volume > (2 * avg_volume)
-        return condition_met, last_volume, avg_volume
+        # Highest high: current high is the highest in ALL available data
+        highest_high = data['High'].iloc[:-1].max()
+        is_highest_high = current_high >= highest_high
+
+        # Higher low: current low is higher than the lowest low in ALL available data
+        lowest_low = data['Low'].iloc[:-1].min()
+        is_higher_low = current_low > lowest_low
+
+        # Order flow pass: both conditions met (strong buying pressure)
+        condition_met = is_highest_high and is_higher_low
+
+        return condition_met, current_high, highest_high, is_higher_low
 
     def check_vwap_condition(self, data: pd.DataFrame) -> tuple[bool, float, float]:
         """
@@ -609,8 +622,8 @@ Only return the JSON, nothing else."""
                 "content": """You are a conservative trading signal analyzer. Your task is to evaluate if a stock presents a "Strong Buy" opportunity based on the Triad Logic:
 
 TRIAD EVALUATION:
-1. VWAP Condition: Price > VWAP (bullish momentum)
-2. Volume Condition: Last Volume > 2x 10-period Average (strong order flow)
+1. Order Flow Condition (PRIMARY): Current High is highest in ALL historical data AND Current Low is higher than historical lowest low (strong bullish pressure)
+2. VWAP Condition (SECONDARY): Price > VWAP (confirms bullish momentum)
 3. Visual Pattern: Bullish body-only pattern detected by vision model
 
 RESPONSE FORMAT:
@@ -629,9 +642,10 @@ Do not provide additional explanation. Just the signal."""
     "current_price": {analysis_data.get('current_price', 0)},
     "vwap": {analysis_data.get('vwap', 0)},
     "vwap_condition_met": {analysis_data.get('vwap_condition_met', False)},
-    "last_volume": {analysis_data.get('last_volume', 0)},
-    "avg_volume_10": {analysis_data.get('avg_volume', 0)},
-    "volume_condition_met": {analysis_data.get('volume_condition_met', False)},
+    "current_high": {analysis_data.get('current_high', 0)},
+    "highest_high_all": {analysis_data.get('highest_high', 0)},
+    "higher_low": {analysis_data.get('higher_low', False)},
+    "orderflow_condition_met": {analysis_data.get('orderflow_condition_met', False)},
     "vision_analysis": {analysis_data.get('vision_analysis', {})}
 }}
 
@@ -733,9 +747,23 @@ class StockMonitor:
                 logger.warning(f"Insufficient data for {ticker}")
                 return None
 
-            # Step 2: Check VWAP condition (cheap check first)
+            # Step 2: Check Order Flow condition (PRIMARY - must show bullish pressure)
+            orderflow_met, current_high, highest_high, higher_low = self.analysis_engine.check_order_flow_condition(data)
+            logger.info(f"Order Flow Check (PRIMARY): High=${current_high:.2f} vs Highest=${highest_high:.2f}, Higher Low: {higher_low} - {'✓ PASS' if orderflow_met else '✗ FAIL'}")
+
+            if not orderflow_met:
+                logger.info(f"{ticker}: Order flow condition not met (no bullish pressure), HOLD signal (skipping chart generation and vision analysis)")
+                return {
+                    "ticker": ticker,
+                    "signal": "HOLD",
+                    "reason": "No bullish order flow (highest high + higher low)",
+                    "orderflow_high": current_high,
+                    "orderflow_highest": highest_high
+                }
+
+            # Step 3: Check VWAP condition (SECONDARY - confirms bullish momentum)
             vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
-            logger.info(f"VWAP Check: Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
+            logger.info(f"VWAP Check (SECONDARY): Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
 
             if not vwap_met:
                 logger.info(f"{ticker}: Price below VWAP, HOLD signal (skipping chart generation and vision analysis)")
@@ -745,26 +773,12 @@ class StockMonitor:
                     "reason": "Price below VWAP",
                     "price": price,
                     "vwap": vwap,
-                    "volume_ratio": 0
+                    "orderflow_high": current_high,
+                    "orderflow_highest": highest_high
                 }
 
-            # Step 3: Check Volume condition (cheap check second)
-            volume_met, last_vol, avg_vol = self.analysis_engine.check_volume_condition(data)
-            logger.info(f"Volume Check: Last={last_vol:,.0f} vs Avg={avg_vol:,.0f} (2x={2*avg_vol:,.0f}) - {'✓ PASS' if volume_met else '✗ FAIL'}")
-
-            if not volume_met:
-                logger.info(f"{ticker}: Volume condition not met, HOLD signal (skipping chart generation and vision analysis)")
-                return {
-                    "ticker": ticker,
-                    "signal": "HOLD",
-                    "reason": "Volume below 2x average",
-                    "price": price,
-                    "vwap": vwap,
-                    "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0
-                }
-
-            # Step 4: Both VWAP and Volume passed - now generate chart and run vision analysis
-            logger.info(f"{ticker}: VWAP and Volume conditions met - proceeding with chart generation and vision analysis")
+            # Step 4: Both Order Flow and VWAP passed - now generate chart and run vision analysis
+            logger.info(f"{ticker}: Order Flow and VWAP conditions met - proceeding with chart generation and vision analysis")
 
             # Generate basic chart
             chart_path = self.analysis_engine.generate_chart(ticker, data)
@@ -820,9 +834,10 @@ class StockMonitor:
                 "current_price": price,
                 "vwap": vwap,
                 "vwap_condition_met": vwap_met,
-                "last_volume": last_vol,
-                "avg_volume": avg_vol,
-                "volume_condition_met": volume_met,
+                "current_high": current_high,
+                "highest_high": highest_high,
+                "higher_low": higher_low,
+                "orderflow_condition_met": orderflow_met,
                 "vision_analysis": vision_result
             }
 
@@ -837,7 +852,8 @@ class StockMonitor:
                     "reason": "Logic analysis failed",
                     "price": price,
                     "vwap": vwap,
-                    "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0,
+                    "orderflow_high": current_high,
+                    "orderflow_highest": highest_high,
                     "vision_result": vision_result,
                     "annotated_chart": annotated_path
                 }
@@ -850,7 +866,8 @@ class StockMonitor:
                 "signal": final_signal,
                 "price": price,
                 "vwap": vwap,
-                "volume_ratio": last_vol / avg_vol if avg_vol > 0 else 0,
+                "orderflow_high": current_high,
+                "orderflow_highest": highest_high,
                 "vision_result": vision_result,
                 "annotated_chart": annotated_path
             }
@@ -865,7 +882,7 @@ class StockMonitor:
 
 Price: ${price:.2f}
 VWAP: ${vwap:.2f}
-Volume Ratio: {last_vol/avg_vol:.1f}x
+High: ${current_high:.2f} (Highest: ${highest_high:.2f})
 
 Pattern: {pattern_name}"""
                 if pattern_reasoning:
@@ -959,7 +976,8 @@ Pattern: {pattern_name}"""
                     "signal": signal,
                     "price": result.get("price", 0),
                     "vwap": result.get("vwap", 0),
-                    "volume_ratio": result.get("volume_ratio", 0),
+                    "orderflow_high": result.get("orderflow_high", 0),
+                    "orderflow_highest": result.get("orderflow_highest", 0),
                     "pattern": pattern_info.get("pattern_detected", "Unknown"),
                     "pattern_signal": pattern_info.get("signal", "NEUTRAL"),
                     "reasoning": pattern_info.get("reasoning", ""),
