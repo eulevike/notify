@@ -788,17 +788,21 @@ class StockMonitor:
             # Parse vision result for chart annotation
             try:
                 import json
+                import re
                 result_text = vision_result.strip()
-                if result_text.startswith('```json'):
-                    result_text = result_text[7:]
-                if result_text.startswith('```'):
-                    result_text = result_text[3:]
-                if result_text.endswith('```'):
-                    result_text = result_text[:-3]
+
+                # Remove all markdown code blocks (```json and ``` variations)
+                # Handle cases like: ``` ```json { ... } ``` or ```json { ... } ```
+                result_text = re.sub(r'^```\s*```\s*(json)?\s*', '', result_text, flags=re.DOTALL)
+                result_text = re.sub(r'^```\s*(json)?\s*', '', result_text, flags=re.DOTALL)
+                result_text = re.sub(r'\s*```\s*$', '', result_text, flags=re.DOTALL)
                 result_text = result_text.strip()
+
                 pattern_info = json.loads(result_text)
-            except json.JSONDecodeError:
-                logger.warning(f"Could not parse vision result as JSON")
+                logger.info(f"Parsed pattern info: {pattern_info.get('pattern_detected', 'Unknown')}")
+            except (json.JSONDecodeError, Exception) as e:
+                logger.warning(f"Could not parse vision result as JSON: {e}")
+                logger.debug(f"Vision result was: {vision_result[:200]}")
                 pattern_info = {}
 
             # Generate annotated chart (only for tickers that pass filters)
@@ -905,14 +909,15 @@ Pattern: {pattern_name}"""
             return default_pattern
 
         try:
+            import re
             # Extract JSON from vision result (may be wrapped in markdown)
             result_text = vision_result.strip()
-            if result_text.startswith('```json'):
-                result_text = result_text[7:]
-            if result_text.startswith('```'):
-                result_text = result_text[3:]
-            if result_text.endswith('```'):
-                result_text = result_text[:-3]
+
+            # Remove all markdown code blocks (```json and ``` variations)
+            # Handle cases like: ``` ```json { ... } ``` or ```json { ... } ```
+            result_text = re.sub(r'^```\s*```\s*(json)?\s*', '', result_text, flags=re.DOTALL)
+            result_text = re.sub(r'^```\s*(json)?\s*', '', result_text, flags=re.DOTALL)
+            result_text = re.sub(r'\s*```\s*$', '', result_text, flags=re.DOTALL)
             result_text = result_text.strip()
 
             parsed = json.loads(result_text)
@@ -922,8 +927,8 @@ Pattern: {pattern_name}"""
                 "reasoning": parsed.get("reasoning", ""),
                 "confidence": parsed.get("confidence", "low")
             }
-        except (json.JSONDecodeError, KeyError):
-            logger.warning(f"Could not parse vision result as JSON")
+        except (json.JSONDecodeError, KeyError, Exception) as e:
+            logger.warning(f"Could not parse vision result as JSON: {e}")
             return default_pattern
 
     def _save_last_run_json(self, results: List[Dict[str, Any]], buy_signals: int) -> None:
