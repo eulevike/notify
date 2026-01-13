@@ -137,7 +137,8 @@ class AnalysisEngine:
         """
         Fetch data from Polygon.io Aggregates API.
 
-        Returns up to 3 years of 15-minute data.
+        Note: Polygon doesn't support 15-minute directly. We fetch 1-minute bars
+        and resample to 15-minute.
         """
         import time
         import requests
@@ -158,10 +159,11 @@ class AnalysisEngine:
 
             logger.info(f"Fetching Polygon.io data for {ticker} (as {poly_ticker})...")
 
-            # Polygon.io Aggregates API for 15-minute bars
+            # Polygon.io Aggregates API for 1-minute bars (then resample to 15-min)
+            # Polygon doesn't support 15min directly, only 'minute' (1-min)
             url = (
                 f"https://api.polygon.io/v2/aggs/ticker/{poly_ticker}"
-                f"/range/1/15minute/{start_ts}/{end_ts}"
+                f"/range/1/minute/{start_ts}/{end_ts}"
                 f"?adjusted=true&sort=asc&limit=50000&apiKey={self.api_key}"
             )
 
@@ -195,8 +197,17 @@ class AnalysisEngine:
             df = pd.DataFrame(data_list)
             df.set_index("Datetime", inplace=True)
 
-            logger.info(f"Fetched {len(df)} candles from Polygon.io for {ticker}")
-            return df
+            # Resample 1-minute bars to 15-minute bars
+            df_15m = df.resample('15min').agg({
+                'Open': 'first',
+                'High': 'max',
+                'Low': 'min',
+                'Close': 'last',
+                'Volume': 'sum'
+            }).dropna()
+
+            logger.info(f"Fetched {len(df_15m)} 15-min candles from Polygon.io (resampled from {len(df)} 1-min bars) for {ticker}")
+            return df_15m
 
         except Exception as e:
             logger.error(f"Error fetching Polygon.io data for {ticker}: {e}")
