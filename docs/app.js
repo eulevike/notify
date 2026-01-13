@@ -122,7 +122,8 @@ function mergeExchangeResults(exchanges) {
         total_analyzed: 0,
         buy_signals: 0,
         results: [],
-        exchanges: [] // Track which exchanges contributed
+        exchanges: [], // Track which exchanges contributed
+        exchangeTimes: {} // Track individual exchange timestamps
     };
 
     // Merge all results
@@ -132,10 +133,14 @@ function mergeExchangeResults(exchanges) {
             merged.buy_signals += exchange.buy_signals || 0;
             merged.results.push(...(exchange.results || []));
 
-            // Track exchange info
+            // Track exchange info and timestamp
             const exchangeName = getExchangeName(exchange);
-            if (exchangeName && !merged.exchanges.includes(exchangeName)) {
-                merged.exchanges.push(exchangeName);
+            if (exchangeName) {
+                if (!merged.exchanges.includes(exchangeName)) {
+                    merged.exchanges.push(exchangeName);
+                }
+                // Store individual exchange timestamp
+                merged.exchangeTimes[exchangeName] = exchange.timestamp;
             }
         }
     });
@@ -227,11 +232,31 @@ function renderLastRun() {
     const timeDisplay = timestamp ? new Date(timestamp).toLocaleString() : 'No data yet';
     const exchanges = state.lastRun.exchanges || [];
     const exchangesDisplay = exchanges.length > 0 ? exchanges.join(', ') : 'All';
+    const exchangeTimes = state.lastRun.exchangeTimes || {};
+
+    // Build individual exchange times HTML
+    let exchangeTimesHtml = '';
+    if (Object.keys(exchangeTimes).length > 0) {
+        exchangeTimesHtml = '<div class="exchange-times">';
+        const exchangeOrder = ['LSE', 'Munich', 'US'];
+        exchangeOrder.forEach(exchange => {
+            if (exchangeTimes[exchange]) {
+                const exTime = new Date(exchangeTimes[exchange]).toLocaleString();
+                exchangeTimesHtml += `
+                    <div class="exchange-time-item">
+                        <span class="exchange-time-label">${exchange}:</span>
+                        <span class="exchange-time-value">${exTime}</span>
+                    </div>
+                `;
+            }
+        });
+        exchangeTimesHtml += '</div>';
+    }
 
     elements.lastRunSummary.innerHTML = `
         <div class="summary-stats">
             <div class="stat">
-                <span class="stat-label">Time</span>
+                <span class="stat-label">Last Scan</span>
                 <span class="stat-value">${timeDisplay}</span>
             </div>
             <div class="stat">
@@ -247,6 +272,7 @@ function renderLastRun() {
                 <span class="stat-value ${state.lastRun.buy_signals > 0 ? 'buy' : ''}">${state.lastRun.buy_signals}</span>
             </div>
         </div>
+        ${exchangeTimesHtml}
     `;
 
     // Results table
