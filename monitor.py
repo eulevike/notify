@@ -123,8 +123,8 @@ class AnalysisEngine:
                 logger.info(f"Fetching data for {ticker}... (attempt {attempt + 1}/{max_retries})")
                 ticker_obj = yf.Ticker(ticker)
 
-                # Fetch 15-minute data for 5 days (about 130 candles for 5 trading days)
-                data = ticker_obj.history(period="5d", interval="15m", prepost=False)
+                # Fetch 15-minute data for 60 days (max available for 15-min interval)
+                data = ticker_obj.history(period="2mo", interval="15m", prepost=False)
 
                 if data.empty:
                     logger.warning(f"No data returned for {ticker} (attempt {attempt + 1})")
