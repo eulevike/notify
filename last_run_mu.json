@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-14T07:23:05Z",
+  "timestamp": "2026-01-14T08:26:32Z",
   "status": "completed",
   "total_analyzed": 1,
   "buy_signals": 0,
@@ -9,7 +9,7 @@
       "signal": "HOLD",
       "price": 0,
       "vwap": 0,
-      "orderflow_high": 423.0,
+      "orderflow_high": 433.0,
       "orderflow_highest": 455.0,
       "pattern": "Unknown",
       "pattern_signal": "NEUTRAL",
