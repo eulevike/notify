@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-15T08:35:27Z",
+  "timestamp": "2026-01-15T09:31:53Z",
   "status": "completed",
   "total_analyzed": 2,
   "buy_signals": 0,
@@ -9,7 +9,7 @@
       "signal": "HOLD",
       "price": 0,
       "vwap": 0,
-      "orderflow_high": 1289.0,
+      "orderflow_high": 1278.0,
       "orderflow_highest": 1306.5989990234375,
       "pattern": "Unknown",
       "pattern_signal": "NEUTRAL",
@@ -19,14 +19,14 @@
     {
       "ticker": "BC94.L",
       "signal": "HOLD",
-      "price": 0,
-      "vwap": 0,
-      "orderflow_high": 2432.0,
-      "orderflow_highest": 2438.0,
-      "pattern": "Unknown",
+      "price": 2430.0,
+      "vwap": 2158.3201830547628,
+      "orderflow_high": 2456.0,
+      "orderflow_highest": 2452.0,
+      "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "",
-      "chart_path": ""
+      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no preceding red body), no hammer formation (no prior downward movement), and no swing low followed by higher highs in the recent candles.",
+      "chart_path": "bc94.l_annotated.png"
     }
   ]
 }
