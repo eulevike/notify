@@ -851,7 +851,11 @@ class StockMonitor:
                 logger.warning(f"Insufficient data for {ticker}")
                 return None
 
-            # Step 2: Check Order Flow condition (PRIMARY - must show bullish pressure)
+            # Step 2: Check VWAP condition (calculate price/vwap first for all results)
+            vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
+            logger.info(f"VWAP Check (SECONDARY): Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
+
+            # Step 3: Check Order Flow condition (PRIMARY - must show bullish pressure)
             orderflow_met, current_high, highest_high, higher_low = self.analysis_engine.check_order_flow_condition(data)
             logger.info(f"Order Flow Check (PRIMARY): High=${current_high:.2f} vs Highest=${highest_high:.2f}, Higher Low: {higher_low} - {'✓ PASS' if orderflow_met else '✗ FAIL'}")
 
@@ -861,13 +865,11 @@ class StockMonitor:
                     "ticker": ticker,
                     "signal": "HOLD",
                     "reason": "No bullish order flow (highest high + higher low)",
+                    "price": price,
+                    "vwap": vwap,
                     "orderflow_high": current_high,
                     "orderflow_highest": highest_high
                 }
-
-            # Step 3: Check VWAP condition (SECONDARY - confirms bullish momentum)
-            vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
-            logger.info(f"VWAP Check (SECONDARY): Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
 
             if not vwap_met:
                 logger.info(f"{ticker}: Price below VWAP, HOLD signal (skipping chart generation and vision analysis)")
