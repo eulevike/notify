@@ -3,7 +3,7 @@ Local Body-Only Stock Monitor
 Monitors stocks and sends "Strong Buy" alerts via ntfy.sh
 
 Technical Constraints:
-- 15-minute candles
+- 1-hour candles
 - Wickless analysis (body-only patterns)
 - Triad Logic: VWAP + Order Flow + Visual Pattern
 """
@@ -113,7 +113,7 @@ class AnalysisEngine:
 
     def fetch_data(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Fetch 15-minute candle data using Finnhub API or yfinance fallback.
+        Fetch 1-hour candle data using yfinance.
 
         Args:
             ticker: Stock ticker symbol
@@ -137,7 +137,7 @@ class AnalysisEngine:
         """
         Fetch data from Finnhub.io Stock Candles API.
 
-        Note: Finnhub supports 15-minute candles directly (no resampling needed).
+        Note: Finnhub supports 1-hour candles directly.
         Free tier: 60 calls/minute.
 
         Currently fetching 30 days (can be increased if needed).
@@ -203,7 +203,7 @@ class AnalysisEngine:
             df = pd.DataFrame(data_list)
             df.set_index("Datetime", inplace=True)
 
-            logger.info(f"Fetched {len(df)} 15-min candles from Finnhub for {ticker}")
+            logger.info(f"Fetched {len(df)} 1-hour candles from Finnhub for {ticker}")
             return df
 
         except Exception as e:
@@ -212,7 +212,7 @@ class AnalysisEngine:
 
     def _fetch_yfinance_data(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Fallback: Fetch data from yfinance (59 days max for 15-min).
+        Fallback: Fetch data from yfinance (730 days max for 1-hour).
 
         Note: yfinance returns error for international tickers (.L, .MU)
         with 15-min data, so Polygon.io is recommended.
@@ -225,11 +225,11 @@ class AnalysisEngine:
                 logger.info(f"Fetching yfinance data for {ticker}... (attempt {attempt + 1}/{max_retries})")
                 ticker_obj = yf.Ticker(ticker)
 
-                # Fetch 15-minute data for ~59 days (stay under Yahoo's 60-day limit)
+                # Fetch 1-hour data for ~729 days (stay under Yahoo's 730-day limit)
                 from datetime import datetime, timedelta
                 end_date = datetime.now()
-                start_date = end_date - timedelta(days=59)
-                data = ticker_obj.history(start=start_date, end=end_date, interval="15m", prepost=False)
+                start_date = end_date - timedelta(days=729)
+                data = ticker_obj.history(start=start_date, end=end_date, interval="1h", prepost=False)
 
                 if data.empty:
                     logger.warning(f"No data returned from yfinance for {ticker} (attempt {attempt + 1})")
@@ -654,7 +654,7 @@ class LLMApiClient:
         messages = [
             {
                 "role": "user",
-                "content": f"""Analyze this {ticker} 15-minute candlestick chart for BODY-ONLY bullish patterns.
+                "content": f"""Analyze this {ticker} 1-hour candlestick chart for BODY-ONLY bullish patterns.
 
 IMPORTANT: This is a wickless chart - focus ONLY on the real body (open to close relationship).
 

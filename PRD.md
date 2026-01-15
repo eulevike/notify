@@ -10,7 +10,7 @@ A local Python script that monitors stocks from `tickers.txt` and sends "Strong 
 
 \## Technical Constraints
 
-\- \*\*Timeframe:\*\* 15-minute candles.
+\- \*\*Timeframe:\*\* 1-hour candles.
 
 \- \*\*Execution:\*\* Runs every 1 hour (at :02 past the hour) via local task scheduler.
 

@@ -12,11 +12,11 @@
 
 \## 2. Analysis Engine (Python)
 
-\- \*\*Data Fetch:\*\* `yf.download(interval="15m", period="1d")`.
+\- \*\*Data Fetch:\*\* `yf.download(interval="1h", period="1d")`.
 
 \- \*\*VWAP Calculation:\*\* $\\sum(\\text{Typical Price} \\times \\text{Volume}) / \\sum(\\text{Volume})$.
 
-\- \*\*Visual Generator:\*\* - Filter for the last 20 candles of 15m data.
+\- \*\*Visual Generator:\*\* - Filter for the last 20 candles of 1h data.
 
 &nbsp; - Render a chart where `show\_nontrading=False` and `wick=None` (No wicks).
 
