@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-01-15T09:31:53Z",
+  "timestamp": "2026-01-15T10:28:54Z",
   "status": "completed",
   "total_analyzed": 2,
-  "buy_signals": 0,
+  "buy_signals": 1,
   "results": [
     {
       "ticker": "RR.L",
@@ -18,14 +18,14 @@
     },
     {
       "ticker": "BC94.L",
-      "signal": "HOLD",
-      "price": 2430.0,
-      "vwap": 2158.3201830547628,
-      "orderflow_high": 2456.0,
-      "orderflow_highest": 2452.0,
-      "pattern": "None",
-      "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no preceding red body), no hammer formation (no prior downward movement), and no swing low followed by higher highs in the recent candles.",
+      "signal": "BUY",
+      "price": 2462.0,
+      "vwap": 2160.0314674716246,
+      "orderflow_high": 2468.0,
+      "orderflow_highest": 2468.0,
+      "pattern": "Bullish Engulfing",
+      "pattern_signal": "BULLISH",
+      "reasoning": "The last candle shows a large green body that completely engulfs the previous red body, satisfying the Bullish Engulfing pattern criteria.",
       "chart_path": "bc94.l_annotated.png"
     }
   ]
