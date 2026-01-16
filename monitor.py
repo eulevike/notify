@@ -1152,14 +1152,9 @@ Pattern: {pattern_name}"""
 
         # Analyze each ticker
         import time
-        # Finnhub free tier: 60 calls/minute = 1 second between calls (conservative)
-        # yfinance: no rate limit, but 1 second delay is polite
-        finnhub_delay = 1   # seconds
-        yfinance_delay = 1  # seconds
-        delay = finnhub_delay if self.analysis_engine.use_finnhub else yfinance_delay
-
-        if self.analysis_engine.use_finnhub:
-            logger.info(f"Using {delay}s delay between tickers (Finnhub rate limit)")
+        # Using yfinance with 1 second delay between calls
+        delay = 1  # seconds
+        logger.info(f"Using {delay}s delay between tickers")
 
         for i, ticker in enumerate(tickers):
             try:
