@@ -282,17 +282,23 @@ function renderLastRun() {
         return;
     }
 
-    let tableHtml = '<table><thead><tr><th>Ticker</th><th>Exchange</th><th>Signal</th><th>Price</th><th>VWAP</th><th>Yearly Range</th><th>High (vs Highest)</th><th>Pattern</th></tr></thead><tbody>';
+    let tableHtml = '<table><thead><tr><th>Ticker</th><th>Exchange</th><th>Signal</th><th>Price</th><th>VWAP</th><th>Yearly Range</th><th>Low (vs Lowest)</th><th>Stop Loss</th><th>TP1</th><th>TP2</th><th>Pattern</th></tr></thead><tbody>';
 
     results.forEach(result => {
         const signalClass = result.signal === 'BUY' ? 'signal-buy' : 'signal-hold';
         const exchange = getExchangeFromTicker(result.ticker);
-        const high = result.orderflow_high || 0;
-        const highest = result.orderflow_highest || 0;
-        const highDisplay = high > 0 && highest > 0 ? `$${high.toFixed(2)} ($${highest.toFixed(2)})` : '-';
+        const currentLow = result.current_low || 0;
+        const lowestLow = result.lowest_low || 0;
+        const lowDisplay = currentLow > 0 && lowestLow > 0 ? `$${currentLow.toFixed(2)} ($${lowestLow.toFixed(2)})` : '-';
         const yearlyHigh = result.yearly_high || 0;
         const yearlyLow = result.yearly_low || 0;
         const yearlyRange = yearlyHigh > 0 && yearlyLow > 0 ? `$${yearlyLow.toFixed(2)} - $${yearlyHigh.toFixed(2)}` : '-';
+        const stopLoss = result.stop_loss || 0;
+        const tp1 = result.tp1 || 0;
+        const tp2 = result.tp2 || 0;
+        const stopLossDisplay = stopLoss > 0 ? `$${stopLoss.toFixed(2)}` : '-';
+        const tp1Display = tp1 > 0 ? `$${tp1.toFixed(2)}` : '-';
+        const tp2Display = tp2 > 0 ? `$${tp2.toFixed(2)}` : '-';
         tableHtml += `
             <tr>
                 <td>${result.ticker}</td>
@@ -301,7 +307,10 @@ function renderLastRun() {
                 <td>$${result.price?.toFixed(2) || '-'}</td>
                 <td>$${result.vwap?.toFixed(2) || '-'}</td>
                 <td>${yearlyRange}</td>
-                <td>${highDisplay}</td>
+                <td>${lowDisplay}</td>
+                <td>${stopLossDisplay}</td>
+                <td>${tp1Display}</td>
+                <td>${tp2Display}</td>
                 <td>${result.pattern || '-'}</td>
             </tr>
         `;

@@ -171,32 +171,27 @@ class AnalysisEngine:
 
     def check_order_flow_condition(self, data: pd.DataFrame) -> tuple[bool, float, float, bool]:
         """
-        Check order flow: highest high and higher low (bullish pressure).
+        Check order flow: higher low only (bullish consolidation).
 
-        Order Flow = Current candle making new highs AND higher lows than ALL historical data.
-        This indicates strong buying pressure and upward momentum across the entire dataset.
+        Order Flow = Current candle's low is higher than the lowest low in ALL historical data.
+        This indicates bullish consolidation: buyers are defending higher price levels.
 
         Returns:
-            Tuple of (condition_met, current_high, highest_high, higher_low)
+            Tuple of (condition_met, current_low, lowest_low, is_higher_low)
         """
         if len(data) < 2:
             return False, 0.0, 0.0, False
 
-        current_high = data['High'].iloc[-1]
         current_low = data['Low'].iloc[-1]
-
-        # Highest high: current high is the highest in ALL available data
-        highest_high = data['High'].iloc[:-1].max()
-        is_highest_high = current_high >= highest_high
 
         # Higher low: current low is higher than the lowest low in ALL available data
         lowest_low = data['Low'].iloc[:-1].min()
         is_higher_low = current_low > lowest_low
 
-        # Order flow pass: both conditions met (strong buying pressure)
-        condition_met = is_highest_high and is_higher_low
+        # Order flow pass: higher low condition met (bullish consolidation)
+        condition_met = is_higher_low
 
-        return condition_met, current_high, highest_high, is_higher_low
+        return condition_met, current_low, lowest_low, is_higher_low
 
     def check_vwap_condition(self, data: pd.DataFrame) -> tuple[bool, float, float]:
         """
@@ -211,6 +206,38 @@ class AnalysisEngine:
 
         condition_met = current_price > current_vwap
         return condition_met, current_price, current_vwap
+
+    def calculate_take_profits(self, data: pd.DataFrame, entry_price: float, stop_loss_percent: float = 0.02) -> Dict[str, float]:
+        """
+        Calculate take profit levels based on resistance.
+
+        Args:
+            data: OHLCV DataFrame
+            entry_price: Current entry price (close)
+            stop_loss_percent: Stop loss percentage below entry (default 2%)
+
+        Returns:
+            Dict with stop_loss, tp1, tp2
+        """
+        # Stop loss: percentage below entry
+        stop_loss = entry_price * (1 - stop_loss_percent)
+
+        # Find nearest resistance highs
+        recent_highs = data['High'].tail(30)  # Last 30 periods
+        nearest_high = recent_highs.max()
+        yearly_high = data['High'].max()
+
+        # TP1: nearest recent high, or 5% above entry if no recent high
+        tp1 = nearest_high if nearest_high > entry_price else entry_price * 1.05
+
+        # TP2: yearly high, or 10% above entry if yearly high is below entry
+        tp2 = yearly_high if yearly_high > entry_price else entry_price * 1.10
+
+        return {
+            "stop_loss": stop_loss,
+            "tp1": tp1,
+            "tp2": tp2
+        }
 
     def generate_chart(self, ticker: str, data: pd.DataFrame) -> Optional[str]:
         """
@@ -634,7 +661,7 @@ Only return the JSON, nothing else."""
                 "content": """You are a conservative trading signal analyzer. Your task is to evaluate if a stock presents a "Strong Buy" opportunity based on the Triad Logic:
 
 TRIAD EVALUATION:
-1. Order Flow Condition (PRIMARY): Current High is highest in ALL historical data AND Current Low is higher than historical lowest low (strong bullish pressure)
+1. Order Flow Condition (PRIMARY): Current Low is higher than historical lowest low (higher low - indicates bullish consolidation)
 2. VWAP Condition (SECONDARY): Price > VWAP (confirms bullish momentum)
 3. Visual Pattern: Bullish body-only pattern detected by vision model
 
@@ -654,8 +681,8 @@ Do not provide additional explanation. Just the signal."""
     "current_price": {analysis_data.get('current_price', 0)},
     "vwap": {analysis_data.get('vwap', 0)},
     "vwap_condition_met": {analysis_data.get('vwap_condition_met', False)},
-    "current_high": {analysis_data.get('current_high', 0)},
-    "highest_high_all": {analysis_data.get('highest_high', 0)},
+    "current_low": {analysis_data.get('current_low', 0)},
+    "lowest_low_all": {analysis_data.get('lowest_low', 0)},
     "higher_low": {analysis_data.get('higher_low', False)},
     "orderflow_condition_met": {analysis_data.get('orderflow_condition_met', False)},
     "vision_analysis": {analysis_data.get('vision_analysis', {})}
@@ -763,24 +790,24 @@ class StockMonitor:
             vwap_met, price, vwap = self.analysis_engine.check_vwap_condition(data)
             logger.info(f"VWAP Check (SECONDARY): Price=${price:.2f} vs VWAP=${vwap:.2f} - {'✓ PASS' if vwap_met else '✗ FAIL'}")
 
-            # Step 3: Check Order Flow condition (PRIMARY - must show bullish pressure)
-            orderflow_met, current_high, highest_high, higher_low = self.analysis_engine.check_order_flow_condition(data)
-            logger.info(f"Order Flow Check (PRIMARY): High=${current_high:.2f} vs Highest=${highest_high:.2f}, Higher Low: {higher_low} - {'✓ PASS' if orderflow_met else '✗ FAIL'}")
+            # Step 3: Check Order Flow condition (PRIMARY - must show bullish consolidation)
+            orderflow_met, current_low, lowest_low, higher_low = self.analysis_engine.check_order_flow_condition(data)
+            logger.info(f"Order Flow Check (PRIMARY): Low=${current_low:.2f} vs Lowest=${lowest_low:.2f}, Higher Low: {higher_low} - {'✓ PASS' if orderflow_met else '✗ FAIL'}")
 
             # Calculate yearly high and low (52-week / 1 year)
             yearly_high = data['High'].max()
             yearly_low = data['Low'].min()
 
             if not orderflow_met:
-                logger.info(f"{ticker}: Order flow condition not met (no bullish pressure), HOLD signal (skipping chart generation and vision analysis)")
+                logger.info(f"{ticker}: Order flow condition not met (no bullish consolidation), HOLD signal (skipping chart generation and vision analysis)")
                 return {
                     "ticker": ticker,
                     "signal": "HOLD",
-                    "reason": "No bullish order flow (highest high + higher low)",
+                    "reason": "No bullish order flow (higher low)",
                     "price": price,
                     "vwap": vwap,
-                    "orderflow_high": current_high,
-                    "orderflow_highest": highest_high,
+                    "current_low": current_low,
+                    "lowest_low": lowest_low,
                     "yearly_high": yearly_high,
                     "yearly_low": yearly_low
                 }
@@ -793,8 +820,8 @@ class StockMonitor:
                     "reason": "Price below VWAP",
                     "price": price,
                     "vwap": vwap,
-                    "orderflow_high": current_high,
-                    "orderflow_highest": highest_high,
+                    "current_low": current_low,
+                    "lowest_low": lowest_low,
                     "yearly_high": yearly_high,
                     "yearly_low": yearly_low
                 }
@@ -856,8 +883,8 @@ class StockMonitor:
                 "current_price": price,
                 "vwap": vwap,
                 "vwap_condition_met": vwap_met,
-                "current_high": current_high,
-                "highest_high": highest_high,
+                "current_low": current_low,
+                "lowest_low": lowest_low,
                 "higher_low": higher_low,
                 "orderflow_condition_met": orderflow_met,
                 "vision_analysis": vision_result
@@ -874,8 +901,8 @@ class StockMonitor:
                     "reason": "Logic analysis failed",
                     "price": price,
                     "vwap": vwap,
-                    "orderflow_high": current_high,
-                    "orderflow_highest": highest_high,
+                    "current_low": current_low,
+                    "lowest_low": lowest_low,
                     "yearly_high": yearly_high,
                     "yearly_low": yearly_low,
                     "vision_result": vision_result,
@@ -890,8 +917,8 @@ class StockMonitor:
                 "signal": final_signal,
                 "price": price,
                 "vwap": vwap,
-                "orderflow_high": current_high,
-                "orderflow_highest": highest_high,
+                "current_low": current_low,
+                "lowest_low": lowest_low,
                 "yearly_high": yearly_high,
                 "yearly_low": yearly_low,
                 "vision_result": vision_result,
@@ -899,6 +926,14 @@ class StockMonitor:
             }
 
             if "SIGNAL: BUY" in final_signal.upper():
+                # Calculate take profit levels
+                take_profits = self.analysis_engine.calculate_take_profits(data, price)
+
+                # Add take profits to result
+                result["stop_loss"] = take_profits["stop_loss"]
+                result["tp1"] = take_profits["tp1"]
+                result["tp2"] = take_profits["tp2"]
+
                 # Include GitHub Actions URL in alert
                 artifact_url = os.getenv('GITHUB_ACTIONS_URL', '')
                 # Use parsed pattern info to avoid newlines in message
@@ -908,7 +943,12 @@ class StockMonitor:
 
 Price: ${price:.2f}
 VWAP: ${vwap:.2f}
-High: ${current_high:.2f} (Highest: ${highest_high:.2f})
+Low: ${current_low:.2f} (Lowest: ${lowest_low:.2f})
+
+Take Profits:
+Stop Loss: ${take_profits['stop_loss']:.2f}
+TP1: ${take_profits['tp1']:.2f}
+TP2: ${take_profits['tp2']:.2f}
 
 Pattern: {pattern_name}"""
                 if pattern_reasoning:
@@ -1002,10 +1042,13 @@ Pattern: {pattern_name}"""
                     "signal": signal,
                     "price": result.get("price", 0),
                     "vwap": result.get("vwap", 0),
-                    "orderflow_high": result.get("orderflow_high", 0),
-                    "orderflow_highest": result.get("orderflow_highest", 0),
+                    "current_low": result.get("current_low", 0),
+                    "lowest_low": result.get("lowest_low", 0),
                     "yearly_high": result.get("yearly_high", 0),
                     "yearly_low": result.get("yearly_low", 0),
+                    "stop_loss": result.get("stop_loss", 0),
+                    "tp1": result.get("tp1", 0),
+                    "tp2": result.get("tp2", 0),
                     "pattern": pattern_info.get("pattern_detected", "Unknown"),
                     "pattern_signal": pattern_info.get("signal", "NEUTRAL"),
                     "reasoning": pattern_info.get("reasoning", ""),
