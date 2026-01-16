@@ -282,7 +282,7 @@ function renderLastRun() {
         return;
     }
 
-    let tableHtml = '<table><thead><tr><th>Ticker</th><th>Exchange</th><th>Signal</th><th>Price</th><th>VWAP</th><th>High (vs Highest)</th><th>Pattern</th></tr></thead><tbody>';
+    let tableHtml = '<table><thead><tr><th>Ticker</th><th>Exchange</th><th>Signal</th><th>Price</th><th>VWAP</th><th>Yearly Range</th><th>High (vs Highest)</th><th>Pattern</th></tr></thead><tbody>';
 
     results.forEach(result => {
         const signalClass = result.signal === 'BUY' ? 'signal-buy' : 'signal-hold';
@@ -290,6 +290,9 @@ function renderLastRun() {
         const high = result.orderflow_high || 0;
         const highest = result.orderflow_highest || 0;
         const highDisplay = high > 0 && highest > 0 ? `$${high.toFixed(2)} ($${highest.toFixed(2)})` : '-';
+        const yearlyHigh = result.yearly_high || 0;
+        const yearlyLow = result.yearly_low || 0;
+        const yearlyRange = yearlyHigh > 0 && yearlyLow > 0 ? `$${yearlyLow.toFixed(2)} - $${yearlyHigh.toFixed(2)}` : '-';
         tableHtml += `
             <tr>
                 <td>${result.ticker}</td>
@@ -297,6 +300,7 @@ function renderLastRun() {
                 <td class="${signalClass}">${result.signal}</td>
                 <td>$${result.price?.toFixed(2) || '-'}</td>
                 <td>$${result.vwap?.toFixed(2) || '-'}</td>
+                <td>${yearlyRange}</td>
                 <td>${highDisplay}</td>
                 <td>${result.pattern || '-'}</td>
             </tr>

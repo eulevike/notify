@@ -859,6 +859,10 @@ class StockMonitor:
             orderflow_met, current_high, highest_high, higher_low = self.analysis_engine.check_order_flow_condition(data)
             logger.info(f"Order Flow Check (PRIMARY): High=${current_high:.2f} vs Highest=${highest_high:.2f}, Higher Low: {higher_low} - {'✓ PASS' if orderflow_met else '✗ FAIL'}")
 
+            # Calculate yearly high and low (52-week / 1 year)
+            yearly_high = data['High'].max()
+            yearly_low = data['Low'].min()
+
             if not orderflow_met:
                 logger.info(f"{ticker}: Order flow condition not met (no bullish pressure), HOLD signal (skipping chart generation and vision analysis)")
                 return {
@@ -868,7 +872,9 @@ class StockMonitor:
                     "price": price,
                     "vwap": vwap,
                     "orderflow_high": current_high,
-                    "orderflow_highest": highest_high
+                    "orderflow_highest": highest_high,
+                    "yearly_high": yearly_high,
+                    "yearly_low": yearly_low
                 }
 
             if not vwap_met:
@@ -880,7 +886,9 @@ class StockMonitor:
                     "price": price,
                     "vwap": vwap,
                     "orderflow_high": current_high,
-                    "orderflow_highest": highest_high
+                    "orderflow_highest": highest_high,
+                    "yearly_high": yearly_high,
+                    "yearly_low": yearly_low
                 }
 
             # Step 4: Both Order Flow and VWAP passed - now generate chart and run vision analysis
@@ -960,6 +968,8 @@ class StockMonitor:
                     "vwap": vwap,
                     "orderflow_high": current_high,
                     "orderflow_highest": highest_high,
+                    "yearly_high": yearly_high,
+                    "yearly_low": yearly_low,
                     "vision_result": vision_result,
                     "annotated_chart": annotated_path
                 }
@@ -974,6 +984,8 @@ class StockMonitor:
                 "vwap": vwap,
                 "orderflow_high": current_high,
                 "orderflow_highest": highest_high,
+                "yearly_high": yearly_high,
+                "yearly_low": yearly_low,
                 "vision_result": vision_result,
                 "annotated_chart": annotated_path
             }
@@ -1084,6 +1096,8 @@ Pattern: {pattern_name}"""
                     "vwap": result.get("vwap", 0),
                     "orderflow_high": result.get("orderflow_high", 0),
                     "orderflow_highest": result.get("orderflow_highest", 0),
+                    "yearly_high": result.get("yearly_high", 0),
+                    "yearly_low": result.get("yearly_low", 0),
                     "pattern": pattern_info.get("pattern_detected", "Unknown"),
                     "pattern_signal": pattern_info.get("signal", "NEUTRAL"),
                     "reasoning": pattern_info.get("reasoning", ""),
