@@ -104,16 +104,23 @@ class AnalysisEngine:
     def __init__(self, config: Config):
         self.config = config
         self.data_cache: Dict[str, pd.DataFrame] = {}
-        self.api_key = os.getenv("FINNHUB_API_KEY", "")
-        self.use_finnhub = bool(self.api_key)
-        if self.use_finnhub:
-            logger.info("Using Finnhub API for data fetching")
-        else:
-            logger.info("FINNHUB_API_KEY not set, using yfinance fallback")
+        logger.info("Using yfinance for data fetching with 1-year period")
 
     def fetch_data(self, ticker: str) -> Optional[pd.DataFrame]:
         """
-        Fetch 1-hour candle data using yfinance.
+        Fetch 1-hour candle data using yfinance with 1-year period.
+
+        Args:
+            ticker: Stock ticker symbol
+
+        Returns:
+            DataFrame with OHLCV data or None if fetch fails
+        """
+        return self._fetch_yfinance_data(ticker)
+
+    def _fetch_yfinance_data(self, ticker: str) -> Optional[pd.DataFrame]:
+        """
+        Fetch data from yfinance with 1-year period for accurate yearly high/low.
 
         Args:
             ticker: Stock ticker symbol
@@ -123,113 +130,14 @@ class AnalysisEngine:
         """
         import time
 
-        # Try Finnhub first if API key is available
-        if self.use_finnhub:
-            data = self._fetch_finnhub_data(ticker)
-            if data is not None:
-                return data
-            logger.warning(f"Finnhub fetch failed for {ticker}, falling back to yfinance")
-
-        # Fallback to yfinance
-        return self._fetch_yfinance_data(ticker)
-
-    def _fetch_finnhub_data(self, ticker: str) -> Optional[pd.DataFrame]:
-        """
-        Fetch data from Finnhub.io Stock Candles API.
-
-        Note: Finnhub supports 1-hour candles directly.
-        Free tier: 60 calls/minute.
-
-        Currently fetching 30 days (can be increased if needed).
-        """
-        import time
-        import requests
-
-        try:
-            # Normalize ticker for Finnhub
-            # For US stocks, use as-is. For international, Finnhub uses different symbols
-            finnhub_ticker = ticker.replace('.L', '-L').replace('.MU', '.MU')
-
-            # Calculate date range: 30 days back
-            end_date = datetime.now()
-            start_date = end_date - timedelta(days=30)
-
-            # Convert to Unix timestamps in seconds
-            start_ts = int(start_date.timestamp())
-            end_ts = int(end_date.timestamp())
-
-            logger.info(f"Fetching Finnhub data for {ticker} (as {finnhub_ticker})...")
-
-            # Finnhub Stock Candles API for 15-minute bars
-            url = (
-                f"https://finnhub.io/api/v1/stock/candle"
-                f"?symbol={finnhub_ticker}"
-                f"&resolution=15"
-                f"&from={start_ts}"
-                f"&to={end_ts}"
-                f"&token={self.api_key}"
-            )
-
-            response = requests.get(url, timeout=30)
-
-            if response.status_code != 200:
-                logger.error(f"Finnhub API error: {response.status_code} - {response.text}")
-                return None
-
-            result = response.json()
-            logger.debug(f"Finnhub raw response keys: {result.keys()}")
-
-            if result.get("s") != "ok":
-                logger.warning(f"Finnhub status not OK: {result.get('s')}, error: {result.get('error')}")
-                return None
-
-            if not result.get("o") or len(result["o"]) == 0:
-                logger.warning(f"Finnhub returned empty results for {ticker}")
-                return None
-
-            # Finnhub returns arrays: o (open), h (high), l (low), c (close), v (volume), t (timestamp)
-            data_list = []
-
-            for i, ts in enumerate(result["t"]):
-                data_list.append({
-                    "Open": result["o"][i],
-                    "High": result["h"][i],
-                    "Low": result["l"][i],
-                    "Close": result["c"][i],
-                    "Volume": result["v"][i],
-                    "Datetime": pd.to_datetime(ts, unit="s")
-                })
-
-            df = pd.DataFrame(data_list)
-            df.set_index("Datetime", inplace=True)
-
-            logger.info(f"Fetched {len(df)} 1-hour candles from Finnhub for {ticker}")
-            return df
-
-        except Exception as e:
-            logger.error(f"Error fetching Finnhub data for {ticker}: {e}")
-            return None
-
-    def _fetch_yfinance_data(self, ticker: str) -> Optional[pd.DataFrame]:
-        """
-        Fallback: Fetch data from yfinance (730 days max for 1-hour).
-
-        Note: yfinance returns error for international tickers (.L, .MU)
-        with 15-min data, so Polygon.io is recommended.
-        """
-        import time
-
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                logger.info(f"Fetching yfinance data for {ticker}... (attempt {attempt + 1}/{max_retries})")
+                logger.info(f"Fetching yfinance data for {ticker} with 1-year period... (attempt {attempt + 1}/{max_retries})")
                 ticker_obj = yf.Ticker(ticker)
 
-                # Fetch 1-hour data for ~729 days (stay under Yahoo's 730-day limit)
-                from datetime import datetime, timedelta
-                end_date = datetime.now()
-                start_date = end_date - timedelta(days=729)
-                data = ticker_obj.history(start=start_date, end=end_date, interval="1h", prepost=False)
+                # Fetch 1-hour data for 1 year using period parameter
+                data = ticker_obj.history(period="1y", interval="1h", prepost=False)
 
                 if data.empty:
                     logger.warning(f"No data returned from yfinance for {ticker} (attempt {attempt + 1})")
