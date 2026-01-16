@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-16T08:34:28Z",
+  "timestamp": "2026-01-16T09:30:14Z",
   "status": "completed",
   "total_analyzed": 2,
   "buy_signals": 0,
@@ -7,9 +7,9 @@
     {
       "ticker": "RR.L",
       "signal": "HOLD",
-      "price": 1285.5,
-      "vwap": 669.7269660236442,
-      "orderflow_high": 1290.0,
+      "price": 1291.0159912109375,
+      "vwap": 669.8988785340192,
+      "orderflow_high": 1293.0,
       "orderflow_highest": 1306.5989990234375,
       "pattern": "Unknown",
       "pattern_signal": "NEUTRAL",
@@ -19,9 +19,9 @@
     {
       "ticker": "BC94.L",
       "signal": "HOLD",
-      "price": 2530.0,
-      "vwap": 1189.858142895385,
-      "orderflow_high": 2538.0,
+      "price": 2534.0,
+      "vwap": 1189.9474993604767,
+      "orderflow_high": 2536.0,
       "orderflow_highest": 14135.0,
       "pattern": "Unknown",
       "pattern_signal": "NEUTRAL",
