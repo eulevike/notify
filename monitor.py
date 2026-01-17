@@ -727,22 +727,26 @@ class AlertModule:
         try:
             if image_path and os.path.exists(image_path):
                 # Send message with image attachment
+                # Use multipart form data to include both file and message
                 with open(image_path, 'rb') as f:
-                    files = {'file': f}
-                    # Put message in headers for ntfy
-                    headers['Message'] = message
-                    response = requests.post(url, files=files, headers=headers, timeout=10)
+                    files = {
+                        'file': (f.name, f, 'image/png')
+                    }
+                    data = {
+                        'message': message
+                    }
+                    response = requests.post(url, files=files, data=data, headers=headers, timeout=10)
             else:
-                # Send text-only message
-                response = requests.post(url, data=message.encode(), headers=headers, timeout=10)
+                # Send text-only message (message as body, not header)
+                response = requests.post(url, data=message, headers=headers, timeout=10)
 
             if response.status_code in [200, 201]:
-                logger.info(f"Alert sent for {ticker}: {message}")
+                logger.info(f"Alert sent for {ticker}: {message[:100]}...")
                 if image_path:
                     logger.info(f"Chart attached: {image_path}")
                 return True
             else:
-                logger.error(f"Failed to send alert: {response.status_code}")
+                logger.error(f"Failed to send alert: {response.status_code} - {response.text}")
                 return False
 
         except Exception as e:
