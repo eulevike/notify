@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-19T13:42:51Z",
+  "timestamp": "2026-01-19T14:24:24Z",
   "status": "completed",
   "total_analyzed": 1,
   "buy_signals": 0,
@@ -18,7 +18,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no small body at the top of a downward movement. No swing low followed by higher highs as the last candle does not establish a new high after a clear low.",
+      "reasoning": "The last candle shows a small green body, but there's no clear engulfing pattern, hammer formation, or swing low with higher highs in the recent candles. The sequence lacks the specific body relationships required for the bullish patterns specified.",
       "chart_path": "hy9h.mu_annotated.png"
     }
   ]
