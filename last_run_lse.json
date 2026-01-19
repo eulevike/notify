@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-19T15:30:08Z",
+  "timestamp": "2026-01-19T16:34:05Z",
   "status": "completed",
   "total_analyzed": 2,
   "buy_signals": 0,
@@ -7,9 +7,9 @@
     {
       "ticker": "RR.L",
       "signal": "HOLD",
-      "price": 1277.0,
-      "vwap": 929.0406713800588,
-      "current_low": 1275.0,
+      "price": 1272.1500244140625,
+      "vwap": 927.979473492143,
+      "current_low": 1271.0,
       "lowest_low": 562.093994140625,
       "yearly_high": 1306.5989990234375,
       "yearly_low": 562.093994140625,
@@ -18,14 +18,14 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle is also green and not smaller. No hammer pattern is visible as there's no prior downward movement. No swing low higher high pattern is confirmed as the last candle doesn't establish a higher high.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but there's no engulfing pattern, hammer formation, or swing low followed by higher highs visible in the recent candles.",
       "chart_path": "rr.l_annotated.png"
     },
     {
       "ticker": "BC94.L",
       "signal": "HOLD",
-      "price": 2508.0,
-      "vwap": 1383.9864330228231,
+      "price": 2510.0,
+      "vwap": 1380.2789990502283,
       "current_low": 2504.0,
       "lowest_low": 860.0,
       "yearly_high": 2600.0,
@@ -35,7 +35,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle was also green and not smaller. No hammer pattern is visible as there's no prior downward movement to confirm a reversal. The sequence doesn't show a clear swing low followed by higher highs.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
       "chart_path": "bc94.l_annotated.png"
     }
   ]
