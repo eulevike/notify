@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-19T15:22:30Z",
+  "timestamp": "2026-01-19T16:23:57Z",
   "status": "completed",
   "total_analyzed": 37,
   "buy_signals": 0,
@@ -18,7 +18,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish engulfing pattern as there's no smaller bearish body followed by a larger bullish body engulfing it. No hammer pattern as there's no small body at the top after downward movement. No swing low followed by higher highs as the last candles don't show a clear upward momentum from a trough.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High pattern.",
       "chart_path": "mu_annotated.png"
     },
     {
@@ -35,7 +35,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer formation (no preceding downward movement), and no swing low higher high sequence visible in the recent candles.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern, Hammer, or confirm a Swing Low Higher High sequence.",
       "chart_path": "sndk_annotated.png"
     },
     {
@@ -52,48 +52,48 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't engulf the previous red body. There's no clear Hammer pattern as the body isn't positioned at the top of a downward movement. The sequence doesn't show a clear Swing Low followed by Higher High pattern.",
+      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer pattern (no prior downward movement evident), and no swing low higher high pattern (no clear swing low established in recent candles).",
       "chart_path": "wdc_annotated.png"
     },
     {
       "ticker": "LRCX",
       "signal": "HOLD",
       "price": 222.8699951171875,
-      "vwap": 106.03524193309968,
+      "vwap": 105.85196820659681,
       "current_low": 222.12249755859375,
       "lowest_low": 56.31999969482422,
-      "yearly_high": 229.32000732421875,
+      "yearly_high": 228.07000732421875,
       "yearly_low": 56.31999969482422,
       "stop_loss": 0,
       "tp1": 0,
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer formation (no prior downward movement), and no swing low followed by higher highs visible in the recent candles.",
+      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't completely engulf the previous red body. There's no clear Hammer pattern as the body isn't positioned at the top of a downward movement. No Swing Low Higher High pattern is evident as the last candle doesn't establish a higher high after a clear swing low.",
       "chart_path": "lrcx_annotated.png"
     },
     {
       "ticker": "AMAT",
       "signal": "HOLD",
       "price": 327.0299987792969,
-      "vwap": 186.65070030086508,
+      "vwap": 186.69390873657628,
       "current_low": 326.43499755859375,
-      "lowest_low": 123.73650360107422,
+      "lowest_low": 123.8949966430664,
       "yearly_high": 330.9999084472656,
-      "yearly_low": 123.73650360107422,
+      "yearly_low": 123.8949966430664,
       "stop_loss": 0,
       "tp1": 0,
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no small body at the top following a downward movement. No swing low followed by higher highs as the recent candles show mixed price action without a clear upward momentum from a trough.",
+      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no small body at the top of a downward movement. No swing low followed by higher highs as the recent candles do not show a clear trough with subsequent higher highs.",
       "chart_path": "amat_annotated.png"
     },
     {
       "ticker": "ASML",
       "signal": "HOLD",
       "price": 1358.93994140625,
-      "vwap": 813.3928593149013,
+      "vwap": 813.4879458246114,
       "current_low": 1356.1300048828125,
       "lowest_low": 578.510009765625,
       "yearly_high": 1375.3699951171875,
@@ -103,7 +103,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no evidence of a prior downward movement leading to a small body at the bottom. No swing low higher high pattern as the last candle does not establish a higher high after a clear swing low.",
+      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle was also green. No hammer pattern is evident as there's no prior downward movement. The swing low higher high pattern isn't confirmed as the last candle doesn't establish a clear higher high.",
       "chart_path": "asml_annotated.png"
     },
     {
@@ -120,7 +120,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
+      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern (previous candle is also green), no hammer formation (no prior downward movement evident), and no swing low followed by higher highs pattern (the sequence doesn't show a clear trough and subsequent higher highs).",
       "chart_path": "ter_annotated.png"
     },
     {
@@ -137,7 +137,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle's body size and position relative to prior candles do not form a Bullish Engulfing, Hammer, or Swing Low Higher High pattern.",
       "chart_path": "simo_annotated.png"
     },
     {
@@ -154,7 +154,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
+      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer formation (no prior downward movement to reverse), and no swing low followed by higher highs pattern visible in the recent candles.",
       "chart_path": "onto_annotated.png"
     },
     {
@@ -171,7 +171,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern (no preceding red body), no hammer formation (no prior downward movement evident), and no swing low followed by higher highs pattern visible in the recent candles.",
+      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't engulf the previous red body. There's no clear Hammer pattern as there's no significant prior downward movement. The Swing Low Higher High pattern isn't confirmed as the last candle doesn't establish a clear higher high after a swing low.",
       "chart_path": "rmbs_annotated.png"
     },
     {
@@ -188,7 +188,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle was also green and not bearish. No hammer pattern is visible as there's no prior downward movement to confirm reversal. The sequence doesn't show a clear swing low followed by higher highs.",
+      "reasoning": "The last candle shows a small green body, but there's no clear engulfing pattern, hammer formation, or swing low followed by higher highs in the recent candles. The sequence lacks the specific body relationships required for the bullish patterns specified.",
       "chart_path": "pstg_annotated.png"
     },
     {
@@ -205,7 +205,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no small body at the top of a downward movement. No swing low higher high pattern visible in the recent candles.",
+      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle was also green. No hammer pattern is visible as there's no distinct downward movement preceding it. The sequence doesn't show a clear swing low followed by higher highs.",
       "chart_path": "entg_annotated.png"
     },
     {
@@ -256,7 +256,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern (no larger green body engulfing a prior red body), no hammer formation (no small body at top after downward movement), and no swing low followed by higher highs sequence visible in the recent candles.",
+      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence with the preceding candles.",
       "chart_path": "dd_annotated.png"
     },
     {
@@ -290,7 +290,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish pattern detected based on body-only analysis. The last candle's body size and position relative to prior candles do not form a Bullish Engulfing, Hammer, or Swing Low Higher High pattern.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form an engulfing pattern, hammer, or confirm a swing low higher high sequence.",
       "chart_path": "on_annotated.png"
     },
     {
@@ -307,7 +307,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but there's no engulfing pattern, hammer formation, or swing low followed by higher highs visible in the recent candles.",
+      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no prior downward movement to indicate a reversal. No swing low higher high pattern visible in the recent candles.",
       "chart_path": "stm_annotated.png"
     },
     {
@@ -341,7 +341,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (previous candle was also green), no hammer pattern (no prior downward movement evident), and no swing low higher high pattern (not enough context to confirm a swing low).",
+      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer pattern (no prior downward movement), and no swing low higher high formation (no clear swing low point established).",
       "chart_path": "oklo_annotated.png"
     },
     {
@@ -358,7 +358,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
+      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no small body at the top of a downward movement. No swing low followed by higher highs as the recent candles show mixed price action without a clear upward momentum from a trough.",
       "chart_path": "iren_annotated.png"
     },
     {
@@ -392,7 +392,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no preceding red body to engulf), no hammer pattern (no prior downward movement), and no swing low higher high pattern visible in the recent candles. The body size is modest and the color sequence doesn't form a clear bullish reversal pattern.",
+      "reasoning": "The last completed candle shows a small green body, but there's no clear Bullish Engulfing pattern as the previous candle was also green and not smaller. No Hammer pattern is present as there's no prior downward movement to indicate a reversal. The sequence doesn't show a clear Swing Low followed by Higher High pattern.",
       "chart_path": "plug_annotated.png"
     },
     {
@@ -409,7 +409,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish engulfing pattern as there's no smaller bearish body followed by a larger bullish body engulfing it. No hammer pattern as there's no small body at the top of a downward movement. No swing low followed by higher highs as the last candle doesn't show a clear upward momentum from a trough.",
+      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle was also green. No hammer pattern is visible as there's no preceding downward movement. The sequence doesn't show a swing low followed by higher highs.",
       "chart_path": "eose_annotated.png"
     },
     {
@@ -426,7 +426,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle was also green and not smaller. No hammer pattern is visible as there's no prior downward movement. The sequence doesn't show a clear swing low followed by higher highs.",
+      "reasoning": "No clear bullish patterns detected based on body analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High pattern.",
       "chart_path": "bbai_annotated.png"
     },
     {
@@ -443,7 +443,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer pattern (no prior downward movement evident), and no swing low followed by higher highs pattern (insufficient context to confirm swing low formation).",
+      "reasoning": "The last candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle was also green and not smaller. No hammer pattern is present as there's no prior downward movement to reverse. The sequence doesn't show a clear swing low followed by higher highs.",
       "chart_path": "onds_annotated.png"
     },
     {
@@ -460,7 +460,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't completely engulf the previous red body. There's no Hammer pattern as there's no prior downward movement to reverse. No Swing Low Higher High pattern is evident as the recent candles don't show a clear swing low followed by consistent higher highs.",
+      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no preceding red body to engulf), no hammer pattern (no significant downward movement before it), and no swing low followed by higher highs formation in the recent candles.",
       "chart_path": "joby_annotated.png"
     },
     {
@@ -477,7 +477,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle shows a small green body, but it doesn't form an engulfing pattern, hammer, or confirm a swing low higher high sequence.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High pattern.",
       "chart_path": "clsk_annotated.png"
     },
     {
@@ -511,7 +511,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern as the previous candle was also green and not smaller. No hammer pattern is evident as there's no preceding downward movement. The sequence doesn't show a clear swing low followed by higher highs.",
+      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't completely engulf the previous red body. There's no clear Hammer pattern as there's no significant prior downward movement visible, and no Swing Low Higher High pattern is confirmed as the current candle hasn't established a higher high yet.",
       "chart_path": "nbis_annotated.png"
     },
     {
@@ -579,7 +579,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't engulf the previous red body. There's no clear Hammer pattern as there's no significant prior downward movement. The sequence doesn't show a clear Swing Low followed by Higher High pattern.",
+      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
       "chart_path": "ionq_annotated.png"
     },
     {
@@ -596,7 +596,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle does not show a bullish engulfing pattern, hammer formation, or confirm a swing low with higher highs.",
+      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no prior downward movement to confirm reversal. No swing low higher high pattern visible in the recent candles.",
       "chart_path": "rklb_annotated.png"
     },
     {
@@ -613,7 +613,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer formation (no prior downward movement to reverse), and no swing low followed by higher highs (the recent candles don't show a clear trough and subsequent higher highs).",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but there's no engulfing pattern, hammer formation, or swing low with higher highs sequence visible.",
       "chart_path": "rgti_annotated.png"
     },
     {
