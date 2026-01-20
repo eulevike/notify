@@ -1,0 +1,39 @@
+name: Supertrend Monitor - Weekly
+
+on:
+  schedule:
+    # Run every Monday at 10:00 UTC (every 7 days)
+    # Using 10:00 to avoid conflicts with hourly monitors
+    - cron: '0 10 * * 1'
+  workflow_dispatch:  # Allow manual trigger anytime
+
+jobs:
+  supertrend-monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance pandas numpy requests python-dotenv
+
+      - name: Run Supertrend monitor
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python supertrend_monitor.py
+
+      - name: Commit supertrend_state.json to repo
+        if: always()
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add supertrend_state.json
+          git commit -m "Update supertrend_state.json [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
