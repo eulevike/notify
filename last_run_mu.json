@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-20T14:27:59Z",
+  "timestamp": "2026-01-20T15:28:11Z",
   "status": "completed",
   "total_analyzed": 1,
   "buy_signals": 0,
@@ -18,7 +18,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish pattern identified based on body-only analysis. The last candle shows a small green body, but there's no engulfing pattern, hammer formation, or swing low followed by higher highs.",
+      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
       "chart_path": "hy9h.mu_annotated.png"
     }
   ]
