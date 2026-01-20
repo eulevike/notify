@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-20T11:26:18Z",
+  "timestamp": "2026-01-20T12:56:57Z",
   "status": "completed",
   "total_analyzed": 2,
   "buy_signals": 0,
@@ -7,8 +7,8 @@
     {
       "ticker": "RR.L",
       "signal": "HOLD",
-      "price": 1249.5,
-      "vwap": 928.7187234042626,
+      "price": 1253.5,
+      "vwap": 930.1659199785879,
       "current_low": 1248.0,
       "lowest_low": 562.093994140625,
       "yearly_high": 1306.5989990234375,
@@ -18,15 +18,15 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no larger green body engulfing a prior red body), no hammer formation (no small body at top after downward movement), and no swing low followed by higher highs sequence visible in the recent candles.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
       "chart_path": "rr.l_annotated.png"
     },
     {
       "ticker": "BC94.L",
       "signal": "HOLD",
-      "price": 2422.0,
-      "vwap": 1371.7342988205032,
-      "current_low": 2404.0,
+      "price": 2420.0,
+      "vwap": 1379.534294455535,
+      "current_low": 2412.0,
       "lowest_low": 860.0,
       "yearly_high": 2600.0,
       "yearly_low": 860.0,
@@ -35,7 +35,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer formation (no preceding downward movement), and no swing low higher high sequence visible in the recent candles.",
+      "reasoning": "The last completed candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't completely engulf the previous red body. There's no clear Hammer pattern as the small body isn't at the top of a downward movement, and no Swing Low Higher High pattern is evident from the recent candles.",
       "chart_path": "bc94.l_annotated.png"
     }
   ]
