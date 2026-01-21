@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-21T13:49:46Z",
+  "timestamp": "2026-01-21T14:34:48Z",
   "status": "completed",
   "total_analyzed": 2,
   "buy_signals": 0,
@@ -7,9 +7,9 @@
     {
       "ticker": "RR.L",
       "signal": "HOLD",
-      "price": 1257.0,
-      "vwap": 932.2362492738379,
-      "current_low": 1251.5,
+      "price": 1263.7034912109375,
+      "vwap": 932.7169694961011,
+      "current_low": 1251.0,
       "lowest_low": 562.093994140625,
       "yearly_high": 1306.5989990234375,
       "yearly_low": 562.093994140625,
@@ -18,15 +18,15 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no prior downward movement indicated. No swing low higher high pattern as the last candle does not establish a higher high.",
+      "reasoning": "The last candle shows a small green body, but there is no clear engulfing pattern, hammer formation, or swing low followed by higher highs in the recent candles. The sequence lacks the required body relationships for a bullish signal.",
       "chart_path": "rr.l_annotated.png"
     },
     {
       "ticker": "BC94.L",
       "signal": "HOLD",
-      "price": 2518.0,
-      "vwap": 1382.9364505770477,
-      "current_low": 2506.0,
+      "price": 2550.0,
+      "vwap": 1385.6162900785873,
+      "current_low": 2530.0,
       "lowest_low": 860.0,
       "yearly_high": 2600.0,
       "yearly_low": 860.0,
@@ -35,7 +35,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't engulf the previous red body. There's no clear Hammer pattern as there's no significant prior downward movement. The sequence doesn't show a clear Swing Low followed by Higher High pattern.",
+      "reasoning": "The last completed candle shows a small green body, but there's no clear bullish engulfing pattern (no prior red body to engulf), no hammer pattern (no prior downward movement evident), and no swing low followed by higher highs (the recent candles don't show a clear trough formation with subsequent higher highs).",
       "chart_path": "bc94.l_annotated.png"
     }
   ]
