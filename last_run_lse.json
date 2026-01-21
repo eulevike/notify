@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-21T13:00:22Z",
+  "timestamp": "2026-01-21T13:49:46Z",
   "status": "completed",
   "total_analyzed": 2,
   "buy_signals": 0,
@@ -7,25 +7,25 @@
     {
       "ticker": "RR.L",
       "signal": "HOLD",
-      "price": 1248.5,
-      "vwap": 932.1362132117603,
-      "current_low": 1247.5,
+      "price": 1257.0,
+      "vwap": 932.2362492738379,
+      "current_low": 1251.5,
       "lowest_low": 562.093994140625,
       "yearly_high": 1306.5989990234375,
       "yearly_low": 562.093994140625,
       "stop_loss": 0,
       "tp1": 0,
       "tp2": 0,
-      "pattern": "Unknown",
+      "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "",
+      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no prior downward movement indicated. No swing low higher high pattern as the last candle does not establish a higher high.",
       "chart_path": "rr.l_annotated.png"
     },
     {
       "ticker": "BC94.L",
       "signal": "HOLD",
-      "price": 2532.0,
-      "vwap": 1381.9970839353755,
+      "price": 2518.0,
+      "vwap": 1382.9364505770477,
       "current_low": 2506.0,
       "lowest_low": 860.0,
       "yearly_high": 2600.0,
@@ -33,9 +33,9 @@
       "stop_loss": 0,
       "tp1": 0,
       "tp2": 0,
-      "pattern": "Unknown",
+      "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "",
+      "reasoning": "The last candle shows a small green body, but it doesn't form a Bullish Engulfing pattern as it doesn't engulf the previous red body. There's no clear Hammer pattern as there's no significant prior downward movement. The sequence doesn't show a clear Swing Low followed by Higher High pattern.",
       "chart_path": "bc94.l_annotated.png"
     }
   ]
