@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-21T08:28:03Z",
+  "timestamp": "2026-01-21T09:30:02Z",
   "status": "completed",
   "total_analyzed": 1,
   "buy_signals": 0,
@@ -7,9 +7,9 @@
     {
       "ticker": "HY9H.MU",
       "signal": "HOLD",
-      "price": 429.0,
-      "vwap": 240.36558582251797,
-      "current_low": 426.0,
+      "price": 432.0,
+      "vwap": 236.6358050984589,
+      "current_low": 432.0,
       "lowest_low": 94.0,
       "yearly_high": 455.0,
       "yearly_low": 94.0,
@@ -18,7 +18,7 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish pattern detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High sequence.",
+      "reasoning": "The last completed candle shows a small green body, but there is no clear bullish engulfing pattern (no preceding red body to engulf), no hammer pattern (no prior downward movement or small body at top), and no swing low followed by higher highs (no clear trough formation).",
       "chart_path": "hy9h.mu_annotated.png"
     }
   ]
