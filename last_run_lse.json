@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-22T08:36:59Z",
+  "timestamp": "2026-01-22T09:36:16Z",
   "status": "completed",
   "total_analyzed": 2,
   "buy_signals": 0,
@@ -7,9 +7,9 @@
     {
       "ticker": "RR.L",
       "signal": "HOLD",
-      "price": 1257.0,
-      "vwap": 933.6559837650826,
-      "current_low": 1246.0,
+      "price": 1271.0,
+      "vwap": 933.2815585113316,
+      "current_low": 1260.0,
       "lowest_low": 562.093994140625,
       "yearly_high": 1306.5989990234375,
       "yearly_low": 562.093994140625,
@@ -18,24 +18,24 @@
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish patterns identified based on body-only analysis. The last candle's body size, position, and color sequence do not form a Bullish Engulfing, Hammer, or Swing Low Higher High pattern.",
+      "reasoning": "No clear bullish engulfing pattern as the last green body does not completely engulf the previous red body. No hammer pattern as there's no prior downward movement leading to a small body at the bottom. No swing low higher high pattern as the last candle does not establish a higher high after a clear swing low.",
       "chart_path": "rr.l_annotated.png"
     },
     {
       "ticker": "BC94.L",
       "signal": "HOLD",
-      "price": 2601.550048828125,
-      "vwap": 1395.8879894236031,
-      "current_low": 2594.0,
+      "price": 2614.0,
+      "vwap": 1393.309642005899,
+      "current_low": 2602.0,
       "lowest_low": 860.0,
-      "yearly_high": 2608.0,
+      "yearly_high": 2616.0,
       "yearly_low": 860.0,
       "stop_loss": 0,
       "tp1": 0,
       "tp2": 0,
       "pattern": "None",
       "pattern_signal": "NEUTRAL",
-      "reasoning": "No clear bullish pattern detected based on body-only analysis. The last candle shows a small green body, but there's no engulfing pattern, hammer formation, or swing low with higher highs sequence visible in the recent candles.",
+      "reasoning": "No clear bullish patterns detected based on body-only analysis. The last candle shows a small green body, but it doesn't form a Bullish Engulfing, Hammer, or confirm a Swing Low Higher High pattern.",
       "chart_path": "bc94.l_annotated.png"
     }
   ]
